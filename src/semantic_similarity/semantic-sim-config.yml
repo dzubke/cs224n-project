@@ -1,0 +1,4 @@
+data_path: '/Users/dustin/Documents/School/1_stanford/classes/cs224n/project/data/natural-instructions/tasks/task001_quoref_question_generation.json'
+load_embeddings: False
+embedding_path: ''
+embedding_aggregation: None # could be 'mean' or other values
