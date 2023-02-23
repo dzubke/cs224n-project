@@ -1,4 +1,6 @@
 # standard libs
+import argparse
+from typing import List
 # installed libs
 from sentence_transformers import SentenceTransformer
 import yaml
@@ -12,7 +14,7 @@ def main(config_path):
 
     model = load_semantic_sim_model()
 
-    data = load_task_data(cfg['data_path'])
+    data = load_semantic_sim_data()
 
     if cfg.get('load_embeddings', None):
         embeddings = load_embeddings(cfg['embedding_path'])
@@ -35,6 +37,9 @@ def load_config(config_path: str)-> dict:
 def load_semantic_sim_model():
     return SentenceTransformer('all-MiniLM-L6-v2')
 
+def load_semantic_sim_data(data_path:str)-> List[str]:
+    load_task_data(data_path)
+
 def calc_embeddings(model, data):
     assert isinstance(data, list)
     assert isinstance(data[0], str)
@@ -55,5 +60,7 @@ def calc_cosine_similarity(embeddings):
 
 
 if __name__ == "__main__":
-    config_path = "./semantic-sim-config.yml"
-    main(config_path)
+    argp = argparse.ArgumentParser()
+    argp.add_argument('config_path', help="path to config file")
+    args = argp.parse_args()
+    main( args.config_path)
