@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, List, Union
 
-TASK_ID = str  
+TASK_ID = str
 TASK_INSTANCE = Dict[str, Union[str, List[str]]]
 TASK_INSTANCES = List[TASK_INSTANCE]
 TASK_EXAMPLE = List[Dict[str, str]]
@@ -26,10 +26,12 @@ class SupNatKeys(Enum):
     INSTANCES = "Instances"
     INSTANCE_LICENSE = "Instance License"
 
+
 class ExampleKeys(Enum):
     INPUT = "input"
     OUTPUT = "output"
     EXPLANATION = "explanation"
+
 
 class InstanceKeys(Enum):
     ID = "id"

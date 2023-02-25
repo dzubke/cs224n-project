@@ -4,11 +4,16 @@ from pathlib import Path
 from typing import Dict, List
 
 from src.data_utils.constants import (
-    ExampleKeys, InstanceKeys, SupNatKeys,
-    DATASET, FILE_CONTENTS, TASK_INSTANCE, 
+    ExampleKeys,
+    InstanceKeys,
+    SupNatKeys,
+    DATASET,
+    FILE_CONTENTS,
+    TASK_INSTANCE,
 )
 
 JOIN_STR = "__"
+
 
 def load_task_data(data_path):
     data_path = Path(data_path)
@@ -19,12 +24,13 @@ def load_task_data(data_path):
 
     return dataset
 
+
 def read_json_file(file_path) -> DATASET:
     with open(file_path, "r") as fid:
         task_filename = file_path.stem
         raw_instances: TASK_INSTANCE = json.load(fid)
         return {task_filename: raw_instances}
-    
+
 
 def load_semantic_sim_data(data_path: str) -> dict:
     raw_dataset: DATASET = load_task_data(data_path)
@@ -34,15 +40,22 @@ def load_semantic_sim_data(data_path: str) -> dict:
         output.update(extracted_contents)
     return output
 
-def extract_contents(task_filename: str, file_contents: FILE_CONTENTS) -> Dict[str, str]:
+
+def extract_contents(
+    task_filename: str, file_contents: FILE_CONTENTS
+) -> Dict[str, str]:
     extracted_contents = {}
 
     defintion = file_contents[SupNatKeys.DEFINTION.value]
     pos_examples = file_contents[SupNatKeys.POSITIVE_EXAMPLES.value]
     neg_examples = file_contents[SupNatKeys.NEGATIVE_EXAMPLES.value]
 
-    extracted_pos_examples: str = extract_examples(pos_examples, example_type='positive')
-    extracted_neg_examples: str = extract_examples(neg_examples, example_type='negative')
+    extracted_pos_examples: str = extract_examples(
+        pos_examples, example_type="positive"
+    )
+    extracted_neg_examples: str = extract_examples(
+        neg_examples, example_type="negative"
+    )
 
     output_str = defintion
     output_str += extracted_pos_examples
@@ -67,14 +80,16 @@ def extract_contents(task_filename: str, file_contents: FILE_CONTENTS) -> Dict[s
 
     return extracted_contents
 
+
 def extract_examples(examples: List[Dict[str, str]], example_type) -> str:
-    assert example_type in ['positive', 'negative']
+    assert example_type in ["positive", "negative"]
     for id, example in enumerate(examples):
-        output_str = ''
+        output_str = ""
         output_str += f"{example_type} example {id} {ExampleKeys.INPUT.value}: {example[ExampleKeys.INPUT.value]}"
         output_str += f"{example_type} example {id} {ExampleKeys.OUTPUT.value}: {example[ExampleKeys.OUTPUT.value]}"
         output_str += f"{example_type} example {id} {ExampleKeys.EXPLANATION.value}: {example[ExampleKeys.EXPLANATION.value]}"
     return output_str
+
 
 def extract_task_outputs(outputs) -> str:
     return outputs[0]
