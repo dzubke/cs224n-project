@@ -1,4 +1,7 @@
 data_path: '/Users/dustin/Documents/School/1_stanford/classes/cs224n/project/data/natural-instructions/tasks/' #task001_quoref_question_generation.json
-load_embeddings: False
-embedding_path: '/Users/dustin/Documents/School/1_stanford/classes/cs224n/project/cs224n-project/src/semantic_similarity/embeddings.json'
-embedding_aggregation: None # could be 'mean' or other values
+load_embeddings: True
+embedding_path: '/Users/dustin/Documents/School/1_stanford/classes/cs224n/project/cs224n-project/src/semantic_similarity/embeddings_cat_def_pos_neg.json'
+embedding_aggregation: 'mean' # could be 'mean' or other values
+clustering_method: 'agglomerative'
+num_clusters: 10
+distance_threshold: 
