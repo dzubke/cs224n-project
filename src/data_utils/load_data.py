@@ -1,11 +1,12 @@
 # standard libs
 import json
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
-from src.data_utils.constants import (
+from src.data_utils.structures import (
     ExampleKeys,
     InstanceKeys,
+    ProjectKeys,
     SupNatKeys,
     DATASET,
     FILE_CONTENTS,
@@ -35,33 +36,34 @@ def read_json_file(file_path) -> DATASET:
 def load_semantic_sim_data(data_path: str) -> dict:
     raw_dataset: DATASET = load_task_data(data_path)
     output = {}
+    task_to_category = {}
     for task_filename, file_contents in raw_dataset.items():
-        extracted_contents = extract_contents(task_filename, file_contents)
+        extracted_contents, task_to_cat = extract_contents(task_filename, file_contents)
         output.update(extracted_contents)
-    return output
+        task_to_category.update(task_to_cat)
+    return output, task_to_category
 
 
 def extract_contents(
     task_filename: str, file_contents: FILE_CONTENTS
-) -> Dict[str, str]:
+) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
     extracted_contents = {}
 
-    defintion = file_contents[SupNatKeys.DEFINTION.value]
+    categories = file_contents[SupNatKeys.CATEGORIES.value]
+    definition = file_contents[SupNatKeys.DEFINTION.value]
     pos_examples = file_contents[SupNatKeys.POSITIVE_EXAMPLES.value]
     neg_examples = file_contents[SupNatKeys.NEGATIVE_EXAMPLES.value]
 
-    extracted_pos_examples: str = extract_examples(
-        pos_examples, example_type="positive"
-    )
-    extracted_neg_examples: str = extract_examples(
-        neg_examples, example_type="negative"
-    )
+    extracted_pos_examples: str = extract_examples(pos_examples, example_type="positive")
+    extracted_neg_examples: str = extract_examples(neg_examples, example_type="negative")
 
-    output_str = defintion
+    output_str = f"Categories: {' '.join(categories)} | "
+    output_str += f"Definition: {definition} | "
     output_str += extracted_pos_examples
     output_str += extracted_neg_examples
 
     extracted_contents = {task_filename: output_str}
+    task_to_categories = {task_filename: file_contents[SupNatKeys.CATEGORIES.value]}
 
     ## not considering task instances yet
     # for task_instance in file_contents[SupNatKeys.INSTANCES.value]:
@@ -78,16 +80,16 @@ def extract_contents(
     #     full_id = task_filename + JOIN_STR + task_id
     #     extracted_contents.update({full_id: output_str})
 
-    return extracted_contents
+    return extracted_contents, task_to_categories
 
 
 def extract_examples(examples: List[Dict[str, str]], example_type) -> str:
     assert example_type in ["positive", "negative"]
     for id, example in enumerate(examples):
         output_str = ""
-        output_str += f"{example_type} example {id} {ExampleKeys.INPUT.value}: {example[ExampleKeys.INPUT.value]}"
-        output_str += f"{example_type} example {id} {ExampleKeys.OUTPUT.value}: {example[ExampleKeys.OUTPUT.value]}"
-        output_str += f"{example_type} example {id} {ExampleKeys.EXPLANATION.value}: {example[ExampleKeys.EXPLANATION.value]}"
+        output_str += f"{example_type} example {id} {ExampleKeys.INPUT.value}: {example[ExampleKeys.INPUT.value]}, "
+        output_str += f"{example_type} example {id} {ExampleKeys.OUTPUT.value}: {example[ExampleKeys.OUTPUT.value]}, "
+        output_str += f"{example_type} example {id} {ExampleKeys.EXPLANATION.value}: {example[ExampleKeys.EXPLANATION.value]}, "
     return output_str
 
 
