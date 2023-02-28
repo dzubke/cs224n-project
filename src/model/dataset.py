@@ -1,5 +1,5 @@
 from src.data_utils.load_data import load_tasks_set
-from datasets import load_dataset, DatasetDict
+from datasets import load_dataset, DatasetDict, concatenate_datasets
 from transformers import AutoTokenizer
 
 def encode_input_def_pos1(definition, input):
@@ -28,9 +28,13 @@ class TaskDataset:
 
     def get_dataset(self):
         dataset = load_dataset("Muennighoff/natural-instructions")
+        # TODO: replace HF dataset by loading from csv. This dataset has a different split than what we want. 
+        # We concatenate train and validation since we do our own filtering.
+        dataset_cc = concatenate_datasets([dataset['train'], dataset['validation']])
+
         dataset_dict = DatasetDict(
-            train=dataset['train'].filter(lambda example: example["task_name"] in self.train_tasks_set),
-            test=dataset['validation'].filter(lambda example: example["task_name"] in self.test_tasks_set)
+            train=dataset_cc.filter(lambda example: example["task_name"] in self.train_tasks_set),
+            test=dataset_cc.filter(lambda example: example["task_name"] in self.test_tasks_set)
         )
         tokenized = dataset_dict.map(self._tokenize_input_and_target, batched=True, batch_size=4)
         return tokenized['train'], tokenized['test']

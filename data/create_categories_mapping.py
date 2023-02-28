@@ -1,3 +1,10 @@
+"""Autogenerate train/test splits by running the script.
+
+python create_train_test_splits.py --output_dir=<name>
+
+Default flags only work if you run the command from this folder.
+
+"""
 import json
 import argparse
 from os import listdir, path
