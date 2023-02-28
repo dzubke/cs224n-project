@@ -15,6 +15,13 @@ from src.data_utils.structures import (
 
 JOIN_STR = "__"
 
+def load_tasks_set(tasks_path):
+    """Reads the tasks from the path and returns a set."""
+    tasks = set()
+    with open(tasks_path, 'r') as f:
+        for line in f.readlines():
+            tasks.add(line.strip())
+    return tasks
 
 def load_task_data(data_path):
     data_path = Path(data_path)
@@ -95,3 +102,5 @@ def extract_examples(examples: List[Dict[str, str]], example_type) -> str:
 
 def extract_task_outputs(outputs) -> str:
     return outputs[0]
+
+    

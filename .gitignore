@@ -130,3 +130,5 @@ dmypy.json
 
 # Datasets
 natural-instructions-*
+wandb
+checkpoints
