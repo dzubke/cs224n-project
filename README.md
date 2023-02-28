@@ -4,7 +4,7 @@ Project code for Stanford's CS224N
 # Installation
 
 ```
-conda env create -f env.yaml
+conda env create -f env.yml
 python -m pip install -e .  
 ```
 
