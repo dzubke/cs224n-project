@@ -57,6 +57,12 @@ parser.add_argument(
     help="Name of HF pretrained model."
 )
 
+parser.add_argument(
+    "--name",
+    type=str,
+    help="Name of the experiment. This determines where the checkpoints are saved."
+)
+
 def main(args):
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     print("Using device: ", device)
@@ -66,7 +72,7 @@ def main(args):
     train_dataset, test_dataset = task_dataset.get_dataset()
     
     arguments = TrainingArguments(
-        output_dir="checkpoints",
+        output_dir="checkpoints/"+args.name,
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
         num_train_epochs=args.epochs,
