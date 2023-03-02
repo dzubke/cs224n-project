@@ -1,0 +1,162 @@
+{
+    "27": [
+        "Toxic Language Detection"
+    ],
+    "3": [
+        "Translation",
+        "Text Completion",
+        "Misc.",
+        "Fill in The Blank"
+    ],
+    "7": [
+        "Question Answering",
+        "Question Generation",
+        "Question Rewriting",
+        "Answer Verification",
+        "Wrong Candidate Generation",
+        "Explanation",
+        "Question Understanding",
+        "Answerability Classification",
+        "Coreference Resolution",
+        "Linguistic Probing"
+    ],
+    "23": [
+        "Sentiment Analysis",
+        "Text Categorization",
+        "Commonsense Classification",
+        "Text Matching",
+        "Text Quality Evaluation",
+        "Keyword Tagging"
+    ],
+    "5": [
+        "Word Analogy",
+        "Textual Entailment",
+        "Word Relation Classification",
+        "Word Semantics"
+    ],
+    "35": [
+        "Program Execution",
+        "Mathematics"
+    ],
+    "38": [
+        "Dialogue State Tracking",
+        "Negotiation Strategy Detection"
+    ],
+    "13": [
+        "Sentence Perturbation",
+        "Sentence Composition",
+        "Story Composition",
+        "Sentence Ordering"
+    ],
+    "10": [
+        "Text to Code",
+        "Code to Text"
+    ],
+    "1": [
+        "Summarization",
+        "Title Generation"
+    ],
+    "25": [
+        "Cause Effect Classification"
+    ],
+    "39": [
+        "Question Decomposition"
+    ],
+    "2": [
+        "Named Entity Recognition",
+        "Information Extraction",
+        "Data to Text",
+        "Overlap Extraction"
+    ],
+    "17": [
+        "Stereotype Detection"
+    ],
+    "37": [
+        "Language Identification"
+    ],
+    "14": [
+        "Speaker Identification",
+        "Speaker Relation Classification"
+    ],
+    "4": [
+        "Grammar Error Correction",
+        "Grammar Error Detection",
+        "Spelling Error Detection"
+    ],
+    "28": [
+        "Ethics Classification"
+    ],
+    "34": [
+        "Pos Tagging"
+    ],
+    "31": [
+        "Stance Detection"
+    ],
+    "21": [
+        "Section Classification"
+    ],
+    "41": [
+        "Fact Verification"
+    ],
+    "40": [
+        "Paraphrasing"
+    ],
+    "9": [
+        "Dialogue Act Recognition",
+        "Dialogue Generation"
+    ],
+    "36": [
+        "Gender Classification"
+    ],
+    "8": [
+        "Sentence Expansion"
+    ],
+    "0": [
+        "Intent Identification"
+    ],
+    "16": [
+        "Text Simplification"
+    ],
+    "20": [
+        "Number Conversion"
+    ],
+    "30": [
+        "Punctuation Error Detection"
+    ],
+    "22": [
+        "Discourse Connective Identification"
+    ],
+    "32": [
+        "Discourse Relation Classification"
+    ],
+    "29": [
+        "Entity Relation Classification"
+    ],
+    "15": [
+        "Paper Review"
+    ],
+    "6": [
+        "Style Transfer"
+    ],
+    "11": [
+        "Irony Detection"
+    ],
+    "12": [
+        "Entity Generation"
+    ],
+    "33": [
+        "Coherence Classification"
+    ],
+    "24": [
+        "Preposition Prediction"
+    ],
+    "19": [
+        "Spam Classification"
+    ],
+    "26": [
+        "Poem Generation"
+    ],
+    "18": [
+        "Sentence Compression"
+    ]
+}

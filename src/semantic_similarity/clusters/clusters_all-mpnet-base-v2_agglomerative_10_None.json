@@ -1,0 +1,98 @@
+{
+    "9": [
+        "Toxic Language Detection",
+        "Sentiment Analysis",
+        "Stance Detection",
+        "Paper Review",
+        "Style Transfer",
+        "Irony Detection"
+    ],
+    "5": [
+        "Translation",
+        "Paraphrasing",
+        "Sentence Expansion",
+        "Text Simplification",
+        "Number Conversion",
+        "Sentence Compression"
+    ],
+    "7": [
+        "Text Completion",
+        "Sentence Perturbation",
+        "Summarization",
+        "Sentence Composition",
+        "Textual Entailment",
+        "Title Generation",
+        "Text Matching",
+        "Story Composition",
+        "Text Quality Evaluation",
+        "Data to Text",
+        "Discourse Connective Identification",
+        "Linguistic Probing",
+        "Sentence Ordering",
+        "Discourse Relation Classification",
+        "Overlap Extraction",
+        "Coherence Classification"
+    ],
+    "6": [
+        "Question Answering",
+        "Misc.",
+        "Fill in The Blank",
+        "Question Generation",
+        "Cause Effect Classification",
+        "Question Decomposition",
+        "Named Entity Recognition",
+        "Text Categorization",
+        "Stereotype Detection",
+        "Information Extraction",
+        "Answer Verification",
+        "Wrong Candidate Generation",
+        "Explanation",
+        "Commonsense Classification",
+        "Ethics Classification",
+        "Question Understanding",
+        "Section Classification",
+        "Fact Verification",
+        "Gender Classification",
+        "Answerability Classification",
+        "Mathematics",
+        "Coreference Resolution",
+        "Keyword Tagging"
+    ],
+    "1": [
+        "Word Analogy",
+        "Word Relation Classification",
+        "Word Semantics",
+        "Pos Tagging",
+        "Entity Relation Classification",
+        "Entity Generation",
+        "Preposition Prediction"
+    ],
+    "8": [
+        "Program Execution",
+        "Text to Code",
+        "Code to Text"
+    ],
+    "3": [
+        "Dialogue State Tracking",
+        "Language Identification",
+        "Speaker Identification",
+        "Dialogue Act Recognition",
+        "Dialogue Generation",
+        "Intent Identification",
+        "Negotiation Strategy Detection",
+        "Speaker Relation Classification",
+        "Spam Classification"
+    ],
+    "0": [
+        "Question Rewriting"
+    ],
+    "2": [
+        "Grammar Error Correction",
+        "Grammar Error Detection",
+        "Punctuation Error Detection",
+        "Spelling Error Detection"
+    ],
+    "4": [
+        "Poem Generation"
+    ]
+}
