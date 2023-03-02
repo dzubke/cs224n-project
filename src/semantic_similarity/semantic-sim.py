@@ -12,6 +12,7 @@ from sentence_transformers import SentenceTransformer
 from sklearn import cluster
 from sklearn.decomposition import PCA
 import yaml
+from yellowbrick.cluster import KElbowVisualizer
 
 # project libs
 from src.data_utils.load_data import load_semantic_sim_data
@@ -24,7 +25,7 @@ def main(cfg):
     if cfg.get("load_embeddings", None):
         embeddings_dict = load_json(cfg["embedding_path"])
     else:
-        model = load_semantic_sim_model()
+        model = load_semantic_sim_model(cfg["model_name"])
         embeddings_dict = calc_embeddings(model, data)
         # print(list(embeddings_dict.items())[:3])
         save_json(embeddings_dict, cfg["embedding_path"])
@@ -32,18 +33,25 @@ def main(cfg):
     if cfg["embedding_aggregation"] == "mean":
         category_mean_embed = average_embeddings_by_category(embeddings_dict, task_to_categories)
 
-    for n_clusters in [5, 7, 10, 12, 15, 20]:  # [cfg["num_clusters"]]:  #
-        cfg["num_clusters"] = n_clusters
-
-        clustering = get_embedding_clusters(
-            category_mean_embed, cfg["num_clusters"], cfg["distance_threshold"]
-        )
-        labels = clustering.labels_
-        embeddings_pca = get_pca_embeddings(category_mean_embed)
-        run_label = f'{cfg["clustering_method"]}_{cfg["num_clusters"]}_{cfg["distance_threshold"]}'
-        save_pca_plot(embeddings_pca, labels, run_label)
-        cluster_to_category = get_cluster_to_category(category_mean_embed, labels)
-        save_json(cluster_to_category, f"clusters/clusters_{run_label}.json")
+    if cfg["use_elbow_method"]:
+        mean_matrix = np.asarray(list(category_mean_embed.values()))
+        model = cluster.KMeans()
+        visualizer = KElbowVisualizer(
+            model, k=(2, 75), metric="distortion", timings=False
+        )  # "distortion",  "silhouette", "calinski_harabasz"
+        visualizer.fit(mean_matrix)  # Fit the data to the visualizer
+        visualizer.show()  # Finalize and render the figure
+    else:
+        for num_clusters in cfg["num_clusters"]:
+            clustering = get_embedding_clusters(
+                category_mean_embed, num_clusters, cfg["distance_threshold"]
+            )
+            labels = clustering.labels_
+            embeddings_pca = get_pca_embeddings(category_mean_embed)
+            run_label = f'{cfg["model_name"]}_{cfg["clustering_method"]}_{num_clusters}_{cfg["distance_threshold"]}'
+            save_pca_plot(embeddings_pca, labels, run_label)
+            cluster_to_category = get_cluster_to_category(category_mean_embed, labels)
+            save_json(cluster_to_category, f"clusters/clusters_{run_label}.json")
 
 
 def load_config(config_path: str) -> dict:
@@ -51,8 +59,8 @@ def load_config(config_path: str) -> dict:
         return yaml.load(fid, Loader=yaml.CLoader)
 
 
-def load_semantic_sim_model():
-    return SentenceTransformer("all-MiniLM-L6-v2")
+def load_semantic_sim_model(model_name):
+    return SentenceTransformer(model_name)
 
 
 def calc_embeddings(model, data: Dict[str, str]) -> Dict[str, List[float]]:
