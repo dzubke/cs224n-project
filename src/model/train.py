@@ -75,6 +75,7 @@ def main(args):
         save_strategy="epoch",
         load_best_model_at_end=True,
         max_steps=args.max_steps,
+        save_total_limit=5,
         report_to="wandb",
         seed=224
     )
