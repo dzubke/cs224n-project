@@ -1,0 +1,5 @@
+Train categories:
+	Toxic Language Detection
+	Sentiment Analysis
+Test categories:
+	Text Completion
