@@ -1,2 +1,5 @@
-Toxic Language Detection
-Sentiment Analysis
+Data to Text
+Preposition Prediction
+Sentence Expansion
+Grammar Error Detection
+Spam Classification

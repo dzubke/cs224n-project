@@ -1,0 +1,8 @@
+Train categories:
+	Sentence Expansion
+	Data to Text
+	Preposition Prediction
+	Spam Classification
+	Grammar Error Detection
+Test categories:
+	Text Completion

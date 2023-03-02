@@ -1,5 +1,8 @@
 Train categories:
-	Toxic Language Detection
-	Sentiment Analysis
+	Speaker Identification
+	Dialogue Act Recognition
+	Intent Identification
+	Negotiation Strategy Detection
+	Speaker Relation Classification
 Test categories:
 	Text Completion

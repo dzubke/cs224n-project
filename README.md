@@ -23,10 +23,17 @@ Then run:
 ```
 python create_train_test_splits.py --output_dir=<name>
 ```
+# Sampling
+Either use `--sample_num` or `--sample_rate`
+```
+cd data
+python sample_tasks.py --csv=same_cluster/test.csv --sample_num=1000
+```
 
 # Train
 From project root directory:
 ```
 python -m src.model.train --train_tasks=data/overfit/train_tasks.txt --test_tasks=data/overfit/test_tasks.txt --batch_size=16
 ```
+
 
