@@ -7,12 +7,12 @@ def encode_input_def_pos1(definition, input):
     return "Definition: {} | Input: {}".format(definition, input)
 
 class TaskDataset:
-    def __init__(self, train_tasks_path, test_tasks_path, tokenizer="t5-small"):
-        self.train_tasks_set = load_tasks_set(train_tasks_path)
-        # TODO(hong): Use custom test tasks for evaluation.
-        self.test_tasks_set = load_tasks_set(test_tasks_path)
+    def __init__(self,  dataset_dir, train_file, test_file, tokenizer="t5-small"):
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer, model_max_length=512)
-    
+        self.dataset_dir = dataset_dir
+        self.train_file = train_file
+        self.test_file = test_file
+
 
     def _tokenize_input_and_target(self, examples):
         input_strings = [encode_input_def_pos1(x,y) for x,y in zip(examples['definition'],examples['inputs'])]
@@ -29,19 +29,9 @@ class TaskDataset:
 
 
     def get_dataset(self):
-        dataset = load_dataset("Muennighoff/natural-instructions")
-        # TODO: replace HF dataset by loading from csv. This dataset has a different split than what we want. 
-        # We concatenate train and validation since we do our own filtering.
-        # dataset_cc = concatenate_datasets([dataset['train'], dataset['validation'], dataset['test']])
-        # dataset.to_csv('test.csv')
-        # pdb.set_trace()
-        dataset_dict = DatasetDict(
-            train=dataset['train'].filter(lambda example: example["task_name"] in self.train_tasks_set),
-            test=dataset['validation'].filter(lambda example: example["task_name"] not in self.train_tasks_set)
-        )
-        dataset_dict['train'].to_csv('train.csv')
-        dataset_dict['test'].to_csv('test.csv')
-        pdb.set_trace()
+        train_dataset = load_dataset('csv', data_files=self.dataset_dir+"/"+self.train_file)['train']
+        test_dataset = load_dataset('csv', data_files=self.dataset_dir+"/"+self.test_file)['train']
+        dataset_dict = DatasetDict(train=train_dataset, test=test_dataset)
         tokenized = dataset_dict.map(self._tokenize_input_and_target, batched=True, batch_size=4)
         return tokenized['train'], tokenized['test']
 

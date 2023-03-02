@@ -7,15 +7,19 @@ from src.model.dataset import TaskDataset
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
-    "--train_tasks",
+    "--dataset_dir",
     type=str,
-    help="The directory containing a text file with the training tasks."
+    help="The directory containing the csv files to load train and test dataset."
 )
 
 parser.add_argument(
-    "--test_tasks",
+    "--train_file",
     type=str,
-    help="The directory containing a text file with the test tasks."
+)
+
+parser.add_argument(
+    "--test_file",
+    type=str,
 )
 
 parser.add_argument(
@@ -58,7 +62,7 @@ def main(args):
     print("Using device: ", device)
     model = AutoModelForSeq2SeqLM.from_pretrained(args.model_name).to(device)
 
-    task_dataset = TaskDataset(args.train_tasks, args.test_tasks)
+    task_dataset = TaskDataset(args.dataset_dir, args.train_file, args.test_file)
     train_dataset, test_dataset = task_dataset.get_dataset()
     
     arguments = TrainingArguments(
