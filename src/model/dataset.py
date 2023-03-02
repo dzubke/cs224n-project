@@ -8,7 +8,7 @@ def encode_input_def_pos1(definition, input):
 
 class TaskDataset:
     def __init__(self,  dataset_dir, train_file, test_file, tokenizer="t5-small"):
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer, model_max_length=512)
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer, max_model_length=512)
         self.dataset_dir = dataset_dir
         self.train_file = train_file
         self.test_file = test_file
@@ -18,9 +18,9 @@ class TaskDataset:
         input_strings = [encode_input_def_pos1(x,y) for x,y in zip(examples['definition'],examples['inputs'])]
         targets = examples['targets']
         # Encode the inputs
-        inputs = self.tokenizer(input_strings, return_tensors="pt", padding='max_length', truncation=True, max_length=512)
+        inputs = self.tokenizer(input_strings, return_tensors="pt", padding='max_length', truncation=True)
         # Encode the labels
-        labels = self.tokenizer(targets, return_tensors="pt", padding='max_length', truncation=True, max_length=512).input_ids
+        labels = self.tokenizer(targets, return_tensors="pt", padding='max_length', truncation=True).input_ids
         # Set loss to -100, which is ignored by CrossEntropyLoss.
         labels[labels == self.tokenizer.pad_token_id] = -100
 
@@ -32,6 +32,6 @@ class TaskDataset:
         train_dataset = load_dataset('csv', data_files=self.dataset_dir+"/"+self.train_file)['train']
         test_dataset = load_dataset('csv', data_files=self.dataset_dir+"/"+self.test_file)['train']
         dataset_dict = DatasetDict(train=train_dataset, test=test_dataset)
-        tokenized = dataset_dict.map(self._tokenize_input_and_target, batched=True, batch_size=4)
+        tokenized = dataset_dict.map(self._tokenize_input_and_target, batched=True, batch_size=4, num_proc=4)
         return tokenized['train'], tokenized['test']
 
