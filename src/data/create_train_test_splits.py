@@ -51,23 +51,23 @@ def create_train_test_split(category_mapping_path, output_dir, train_categories_
                 train_categories.add(category)
             except:
                 print("No such category exists in mapping: {}".format(category))
-    with open(test_categories_path, "r") as f, open(output_dir+"/test_tasks.txt", "w") as o:
-        for line in f.readlines():
-            category = line.strip()
-            try:
-                tasks = category_mapping[category]
-                for task in tasks:
-                    o.write(task + "\n")
-                test_categories.add(category)
-            except:
-                print("No such category exists in mapping: {}".format(category))
+    # with open(test_categories_path, "r") as f, open(output_dir+"/test_tasks.txt", "w") as o:
+    #     for line in f.readlines():
+    #         category = line.strip()
+    #         try:
+    #             tasks = category_mapping[category]
+    #             for task in tasks:
+    #                 o.write(task + "\n")
+    #             test_categories.add(category)
+    #         except:
+    #             print("No such category exists in mapping: {}".format(category))
     with open(output_dir+"/categories.txt", "w") as o:
         o.write("Train categories:\n")
         for train_c in train_categories:
             o.write("\t" + train_c + "\n")
-        o.write("Test categories:\n")
-        for test_c in test_categories:
-            o.write("\t" + test_c + "\n")
+        # o.write("Test categories:\n")
+        # for test_c in test_categories:
+        #     o.write("\t" + test_c + "\n")
 
 
 if __name__ == "__main__":

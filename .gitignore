@@ -132,3 +132,4 @@ dmypy.json
 natural-instructions-*
 wandb
 checkpoints
+*.csv
