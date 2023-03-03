@@ -26,11 +26,10 @@ parser.add_argument(
 )
 
 def main(args):
-    # train_map = defaultdict(list)
     all_examples = []
     header = ""
-    with open(args.csv) as f:
-        reader = csv.reader(f)
+    with open(args.csv, encoding='utf-8') as f:
+        reader = csv.reader((line.replace('\0','') for line in f), delimiter=",")
         header = next(reader)
         total_rows = 0
         for row in reader:
@@ -38,7 +37,7 @@ def main(args):
             total_rows += 1
     print("total_rows:", total_rows)
     total_examples = len(all_examples)
-    print("Num training examples:", total_examples)
+    print("Num examples:", total_examples)
     if args.sample_num:
         sample_num = int(args.sample_num)
     else:
