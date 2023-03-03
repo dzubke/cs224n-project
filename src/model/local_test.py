@@ -40,6 +40,7 @@ def main():
         save_strategy="epoch",
         learning_rate=1e-4,
         load_best_model_at_end=True,
+        save_total_limit=5,
         report_to="wandb",
         seed=224
     )
