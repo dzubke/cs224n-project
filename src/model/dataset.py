@@ -19,12 +19,22 @@ class TaskDataset:
         test_path = self.dataset_dir + "/test_tasks.txt"
         train_set = load_tasks_set(train_path)
         test_set = load_tasks_set(test_path)
+
+        # TODO: switch this out for our own file?
         dataset = load_dataset("Muennighoff/natural-instructions")
-        filtered_train = dataset['train'].filter(lambda example: example['task_name'] in train_set)
+        
+        # Combine all datasets from this HF datasets.
+        all_datasets = concatenate_datasets([dataset['train'], dataset['validation'], dataset['test']])
+        # Filter for training set.
+        filtered_train = all_datasets.filter(lambda example: example['task_name'] in train_set)
+        print("Filtered train dataset num:{}".format(filtered_train.num_rows))
         # Make train and test exclusive.
-        filtered_test = dataset['validation'].filter(lambda example: example['task_name'] not in train_set)
+        filtered_test = all_datasets.filter(lambda example: example['task_name'] in test_set and example['task_name'] not in train_set)
+        print("Filtered test dataset num:{}".format(filtered_test.num_rows))
+
         filtered_train.to_csv(self.dataset_dir+"/train.csv")
         filtered_test.to_csv(self.dataset_dir+"/test.csv")
+
         with open(self.dataset_dir+"/summary.txt", 'w') as f:
             f.write("Total train examples: {}\n".format(dataset['train'].num_rows))
             f.write("Total test examples: {}\n".format(dataset['validation'].num_rows))
