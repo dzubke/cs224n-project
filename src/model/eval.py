@@ -23,11 +23,17 @@ parser.add_argument(
     type=str,
 )
 
+parser.add_argument(
+    "--checkpoint",
+    type=str,
+    help="Path to model checkpoint."
+)
+
 if __name__ == "__main__":
     args = parser.parse_args()
     rouge = evaluate.load("rouge")
     tokenizer = T5Tokenizer.from_pretrained("t5-small", model_max_length=512)
-    model = T5ForConditionalGeneration.from_pretrained("/Users/hongjeon/scpd/224n/cs224n-project/checkpoints/checkpoint-10716")
+    model = T5ForConditionalGeneration.from_pretrained(args.checkpoint)
     train_ds, test_ds = TaskDataset(args.dataset_dir, args.train_file, args.test_file).get_dataset()
     print("columns:", test_ds.features)
     for example in test_ds:
