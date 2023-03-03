@@ -37,7 +37,7 @@ parser.add_argument(
 
 def dict_to_row(task_name, task, instance):
     # TODO: come up with a smarter way to take outputs. Take the first output for now.
-    return f"{task_name},{instance['id']},{task['Definition'][0]},{instance['input']},{instance['output'][0]}"
+    return [task_name, instance['id'], repr(str(task['Definition'][0])),repr(str(instance['input'])), repr(str(instance['output'][0]))]
 
 def main(args):
     # Task id -> task
@@ -48,9 +48,13 @@ def main(args):
         for task in f:
             task = task.strip()
             total_tasks += 1
-            filepath = Path(args.dataset_dir) / "tasks" / f"{task}.json"
+            try:
+                filepath = Path(args.dataset_dir) / "tasks" / f"{task}.json"
+                ds = read_json_file(filepath)[task]
+            except:
+                print(f"ERROR. {filepath} does not exist.")
+                continue
             # TODO: support crosslingual. Only use english<->english tasks for now.
-            ds = read_json_file(filepath)[task]
             if 'English' not in ds['Input_language'] or 'English' not in ds['Output_language']:
                 print(f"Skipping non english task: {task}")
                 continue
@@ -63,15 +67,25 @@ def main(args):
         # Sample the same number of instances from each task.
         sample_num = math.floor(args.sample_num / total_tasks)
         print(f"Total tasks: {total_tasks}. Sampling {sample_num} instances from each task.")
+        row_len = None
         for task, task_name in task_data:
-            sampled = random.sample(task['Instances'], sample_num)
+            sampled = random.sample(task['Instances'], min(sample_num,len(task['Instances'])))
             for sample in sampled:
-                sampled_instances.append(dict_to_row(task_name, task,sample).split(","))
+                row = dict_to_row(task_name, task,sample)
+                sampled_instances.append(row)
+                if row_len and row_len != len(row):
+                    print("different length:", len(row))
+                    pdb.set_trace()
+                row_len = len(row)
         print(len(sampled_instances))
         task_filename = args.tasks.split("/")[-1][:-4]
-        with open(args.experiment_dir+f"/sampled_{task_filename}_{args.sample_num}.csv", "w") as f: 
+        with open(args.experiment_dir+f"/sampled_{task_filename}_{args.sample_num}.csv", "w", encoding='utf-8', newline='') as f: 
             w = csv.writer(f)
-            w.writerow(["task_name", "id", "definition", "inputs", "targets"])
+            cols = ["task_name", "id", "definition", "inputs", "targets"]
+            col_len = len(cols)
+            row_len = len(sampled_instances)
+            print(f"col_len: {col_len}, row_len: {row_len}")
+            w.writerow(cols)
             w.writerows(sampled_instances)
 
         

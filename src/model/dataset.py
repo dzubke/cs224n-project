@@ -1,6 +1,6 @@
 from src.data_utils.load_data import load_tasks_set
 import pdb
-from datasets import load_dataset, DatasetDict, concatenate_datasets
+from datasets import load_dataset, DatasetDict, concatenate_datasets, Features, Value
 from transformers import AutoTokenizer
 
 def encode_input_def_pos1(definition, input):
@@ -61,8 +61,14 @@ class TaskDataset:
 
 
     def get_dataset(self):
-        train_dataset = load_dataset('csv', data_files=self.dataset_dir+"/"+self.train_file)['train']
-        test_dataset = load_dataset('csv', data_files=self.dataset_dir+"/"+self.test_file)['train']
+        context_feat = Features({'task_name': Value(dtype='string', id=None), 
+        'id': Value(dtype='string', id=None),
+        'definition': Value(dtype='string', id=None),
+        'inputs': Value(dtype='string', id=None),
+        'targets': Value(dtype='string', id=None)
+                                 })
+        train_dataset = load_dataset('csv', data_files=self.dataset_dir+"/"+self.train_file, features=context_feat, on_bad_lines='skip')['train']
+        test_dataset = load_dataset('csv', data_files=self.dataset_dir+"/"+self.test_file, features=context_feat, on_bad_lines='skip')['train']
         dataset_dict = DatasetDict(train=train_dataset, test=test_dataset)
         tokenized = dataset_dict.map(self._tokenize_input_and_target, batched=True, batch_size=4, num_proc=4)
         return tokenized['train'], tokenized['test']
