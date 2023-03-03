@@ -35,9 +35,9 @@ parser.add_argument(
     help="Number of instance samples to include in total."
 )
 
-def dict_to_row(task, instance):
+def dict_to_row(task_name, task, instance):
     # TODO: come up with a smarter way to take outputs. Take the first output for now.
-    return f"{instance['id']},{task['Definition'][0]},{instance['input']},{instance['output'][0]}"
+    return f"{task_name},{instance['id']},{task['Definition'][0]},{instance['input']},{instance['output'][0]}"
 
 def main(args):
     # Task id -> task
@@ -54,7 +54,7 @@ def main(args):
             if 'English' not in ds['Input_language'] or 'English' not in ds['Output_language']:
                 print(f"Skipping non english task: {task}")
                 continue
-            task_data.append(ds)
+            task_data.append((ds, task))
             total_instances += len(ds['Instances'])
         sampled_instances = [] # each item is a csv row
         if args.sample_num > total_instances:
@@ -62,16 +62,16 @@ def main(args):
             return
         # Sample the same number of instances from each task.
         sample_num = math.floor(args.sample_num / total_tasks)
-        print(f"Sampling {sample_num} instances from each task.")
-        for task in task_data:
+        print(f"Total tasks: {total_tasks}. Sampling {sample_num} instances from each task.")
+        for task, task_name in task_data:
             sampled = random.sample(task['Instances'], sample_num)
             for sample in sampled:
-                sampled_instances.append(dict_to_row(task,sample).split(","))
+                sampled_instances.append(dict_to_row(task_name, task,sample).split(","))
         print(len(sampled_instances))
         task_filename = args.tasks.split("/")[-1][:-4]
         with open(args.experiment_dir+f"/sampled_{task_filename}_{args.sample_num}.csv", "w") as f: 
             w = csv.writer(f)
-            w.writerow(["id", "definition", "input", "output"])
+            w.writerow(["task_name", "id", "definition", "inputs", "targets"])
             w.writerows(sampled_instances)
 
         

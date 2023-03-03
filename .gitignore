@@ -133,3 +133,4 @@ natural-instructions-*
 wandb
 checkpoints
 *.csv
+.DS_Store
