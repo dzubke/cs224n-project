@@ -13,6 +13,28 @@ class TaskDataset:
         self.train_file = train_file
         self.test_file = test_file
 
+    def output_csv(self):
+        """Loads full training data and filters from the tasks that we specified."""
+        train_path = self.dataset_dir + "/train_tasks.txt"
+        test_path = self.dataset_dir + "/test_tasks.txt"
+        train_set = load_tasks_set(train_path)
+        test_set = load_tasks_set(test_path)
+        dataset = load_dataset("Muennighoff/natural-instructions")
+        filtered_train = dataset['train'].filter(lambda example: example['task_name'] in train_set)
+        # Make train and test exclusive.
+        filtered_test = dataset['validation'].filter(lambda example: example['task_name'] not in train_set)
+        filtered_train.to_csv(self.dataset_dir+"/train.csv")
+        filtered_test.to_csv(self.dataset_dir+"/test.csv")
+        with open(self.dataset_dir+"/summary.txt", 'w') as f:
+            f.write("Total train examples: {}\n".format(dataset['train'].num_rows))
+            f.write("Total test examples: {}\n".format(dataset['validation'].num_rows))
+            f.write("\n")
+            f.write("Num train tasks: {}\n".format(len(train_set)))
+            f.write("Num examples: {}\n".format(filtered_train.num_rows))
+            f.write("\n")
+            f.write("Num test tasks: {}\n".format(len(test_set)))
+            f.write("Num examples: {}\n".format(filtered_test.num_rows))
+            
 
     def _tokenize_input_and_target(self, examples):
         input_strings = [encode_input_def_pos1(x,y) for x,y in zip(examples['definition'],examples['inputs'])]

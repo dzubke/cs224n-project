@@ -1,0 +1,8 @@
+Total train examples: 6164188
+Total test examples: 5995
+
+Num train tasks: 26
+Num examples: 76736
+
+Num test tasks: 20
+Num examples: 5995
