@@ -1,6 +1,6 @@
 from src.data_utils.load_data import load_tasks_set
 import pdb
-from datasets import load_dataset, DatasetDict, concatenate_datasets
+from datasets import load_dataset, DatasetDict, concatenate_datasets, Features, Value
 from transformers import AutoTokenizer
 
 def encode_input_def_pos1(definition, input):
@@ -50,9 +50,9 @@ class TaskDataset:
         input_strings = [encode_input_def_pos1(x,y) for x,y in zip(examples['definition'],examples['inputs'])]
         targets = examples['targets']
         # Encode the inputs
-        inputs = self.tokenizer(input_strings, return_tensors="pt", padding='max_length', truncation=True)
+        inputs = self.tokenizer(input_strings, return_tensors="pt", padding='max_length', truncation=True, max_length=128)
         # Encode the labels
-        labels = self.tokenizer(targets, return_tensors="pt", padding='max_length', truncation=True).input_ids
+        labels = self.tokenizer(targets, return_tensors="pt", padding='max_length', truncation=True, max_length=128).input_ids
         # Set loss to -100, which is ignored by CrossEntropyLoss.
         labels[labels == self.tokenizer.pad_token_id] = -100
 
@@ -61,8 +61,8 @@ class TaskDataset:
 
 
     def get_dataset(self):
-        train_dataset = load_dataset('csv', data_files=self.dataset_dir+"/"+self.train_file)['train']
-        test_dataset = load_dataset('csv', data_files=self.dataset_dir+"/"+self.test_file)['train']
+        train_dataset = load_dataset('json', data_files=self.dataset_dir+"/"+self.train_file, field='data')['train']
+        test_dataset = load_dataset('json', data_files=self.dataset_dir+"/"+self.test_file, field='data')['train']
         dataset_dict = DatasetDict(train=train_dataset, test=test_dataset)
         tokenized = dataset_dict.map(self._tokenize_input_and_target, batched=True, batch_size=4, num_proc=4)
         return tokenized['train'], tokenized['test']

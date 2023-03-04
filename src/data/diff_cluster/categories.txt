@@ -1,8 +1,6 @@
 Train categories:
-	Sentence Expansion
-	Data to Text
-	Preposition Prediction
-	Spam Classification
+	Question Rewriting
+	Summarization
+	Word Analogy
 	Grammar Error Detection
-Test categories:
-	Text Completion
+	Word Semantics

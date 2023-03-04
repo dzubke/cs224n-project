@@ -1,5 +1,5 @@
-Data to Text
-Preposition Prediction
-Sentence Expansion
+Word Analogy
+Question Rewriting
+Summarization
 Grammar Error Detection
-Spam Classification
+Word Semantics
