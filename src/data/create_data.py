@@ -35,9 +35,12 @@ parser.add_argument(
     help="Number of instance samples to include in total."
 )
 
-def dict_to_row(task_name, task, instance):
+def create_dict(task_name, task, instance):
+    definition = task['Definition'][0]
+    input = instance['input']
     # TODO: come up with a smarter way to take outputs. Take the first output for now.
-    return [task_name, instance['id'], repr(str(task['Definition'][0])),repr(str(instance['input'])), repr(str(instance['output'][0]))]
+    output = instance['output'][0]
+    return {'task_name': task_name, 'id': instance['id'], 'definition': definition, 'inputs': input, 'targets': output}
 
 def main(args):
     # Task id -> task
@@ -67,26 +70,15 @@ def main(args):
         # Sample the same number of instances from each task.
         sample_num = math.floor(args.sample_num / total_tasks)
         print(f"Total tasks: {total_tasks}. Sampling {sample_num} instances from each task.")
-        row_len = None
+        # Sample instances per task.
         for task, task_name in task_data:
             sampled = random.sample(task['Instances'], min(sample_num,len(task['Instances'])))
             for sample in sampled:
-                row = dict_to_row(task_name, task,sample)
-                sampled_instances.append(row)
-                if row_len and row_len != len(row):
-                    print("different length:", len(row))
-                    pdb.set_trace()
-                row_len = len(row)
+                sampled_instances.append(create_dict(task_name, task,sample))
         print(len(sampled_instances))
         task_filename = args.tasks.split("/")[-1][:-4]
-        with open(args.experiment_dir+f"/sampled_{task_filename}_{args.sample_num}.csv", "w", encoding='utf-8', newline='') as f: 
-            w = csv.writer(f)
-            cols = ["task_name", "id", "definition", "inputs", "targets"]
-            col_len = len(cols)
-            row_len = len(sampled_instances)
-            print(f"col_len: {col_len}, row_len: {row_len}")
-            w.writerow(cols)
-            w.writerows(sampled_instances)
+        with open(args.experiment_dir+f"/sampled_{task_filename}_{args.sample_num}.json", "w", encoding='utf-8', newline='') as f: 
+            json.dump({'data': sampled_instances}, f)
 
         
         
