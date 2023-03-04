@@ -8,6 +8,13 @@ conda env create -f env.yml
 python -m pip install -e .  
 ```
 
+As of 06/10/2022, the pip released `rouge-score` library doesn't support a user-defined tokenizer. You need to clone it from its latest codebase and put it into `eval/automic/`.
+
+```bash
+cd src/eval/
+svn export https://github.com/google-research/google-research/trunk/rouge rouge
+```
+
 # Data
 
 The data for this project comes from [super-natural instructions](https://github.com/allenai/natural-instructions).
@@ -35,5 +42,7 @@ From project root directory:
 ```
 python -m src.model.train --train_tasks=data/overfit/train_tasks.txt --test_tasks=data/overfit/test_tasks.txt --batch_size=16
 ```
+
+
 
 
