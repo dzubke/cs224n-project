@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--dataset_dir",
     type=str,
-    help="The directory containing the csv files to load train and test dataset."
+    help="The directory containing the csv files to load train and test dataset.",
 )
 
 parser.add_argument(
@@ -23,22 +23,17 @@ parser.add_argument(
     type=str,
 )
 
-parser.add_argument(
-    "--checkpoint",
-    type=str,
-    help="Path to model checkpoint."
-)
+parser.add_argument("--checkpoint", type=str, help="Path to model checkpoint.")
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    rouge = evaluate.load("rouge")
     tokenizer = T5Tokenizer.from_pretrained("t5-small", model_max_length=512)
     model = T5ForConditionalGeneration.from_pretrained(args.checkpoint)
     train_ds, test_ds = TaskDataset(args.dataset_dir, args.train_file, args.test_file).get_dataset()
     print("columns:", test_ds.features)
     for example in test_ds:
         print("--------")
-        ids = example['input_ids']
+        ids = example["input_ids"]
         inputs = torch.IntTensor(ids)
         inputs = inputs.unsqueeze(dim=0)
         inputs_decoded = tokenizer.batch_decode(inputs, skip_special_tokens=True)
@@ -46,6 +41,8 @@ if __name__ == "__main__":
         outputs = model.generate(input_ids=inputs)
         outputs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
         print("outputs:", outputs)
-        print("reference:", [example['targets']])
-        results = rouge.compute(predictions=outputs, references=[example['targets']])
+        print("reference:", [example["targets"]])
+        results = rouge.compute(predictions=outputs, references=[example["targets"]])
         print(results)
+
+    # "predictions.jsonl" #Each line of `predictions.jsonl` should correspond to a json object that contains `id` and `prediction` fields.
