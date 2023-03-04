@@ -68,7 +68,7 @@ def main(args):
     print("Using device: ", device)
     model = AutoModelForSeq2SeqLM.from_pretrained(args.model_name).to(device)
 
-    task_dataset = TaskDataset(args.dataset_dir, args.train_file, args.test_file)
+    task_dataset = TaskDataset(args.dataset_dir, args.train_file, args.test_file, args.model_name)
     train_dataset, test_dataset = task_dataset.get_dataset()
     
     arguments = TrainingArguments(
@@ -81,7 +81,8 @@ def main(args):
         save_strategy="epoch",
         load_best_model_at_end=True,
         max_steps=args.max_steps,
-        save_total_limit=5,
+        logging_steps=100,
+        save_total_limit=1,
         report_to="wandb",
         seed=224
     )
