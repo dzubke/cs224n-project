@@ -9,16 +9,19 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--dataset_dir",
     type=str,
+    default="",
     help="The directory containing the csv files to load train and test dataset."
 )
 
 parser.add_argument(
     "--train_file",
+    default="",
     type=str,
 )
 
 parser.add_argument(
     "--test_file",
+    default="",
     type=str,
 )
 
@@ -76,13 +79,15 @@ def main(args):
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
         num_train_epochs=args.epochs,
-        learning_rate=args.learning_rate,
-        evaluation_strategy="epoch",  # run validation at the end of each epoch
-        save_strategy="epoch",
-        load_best_model_at_end=True,
         max_steps=args.max_steps,
+        learning_rate=args.learning_rate,
+        lr_scheduler_type="constant",
+        evaluation_strategy="epoch",  # run validation at the end of each epoch
+        save_strategy="steps",
+        save_steps=500,
         logging_steps=100,
         save_total_limit=1,
+        load_best_model_at_end=True,
         report_to="wandb",
         seed=224
     )
