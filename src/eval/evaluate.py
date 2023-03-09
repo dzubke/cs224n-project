@@ -12,7 +12,7 @@ from src.model.dataset import TaskDataset
 
 def write_predictions(run_name, model_path, verbose=False):
 
-    dataset = load_dataset("Muennighoff/natural-instructions")
+    dataset = load_dataset("jayelm/natural-instructions")
     val_dataset = dataset["validation"]
 
     model = T5ForConditionalGeneration.from_pretrained(model_path)
