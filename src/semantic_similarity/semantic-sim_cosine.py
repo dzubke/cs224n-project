@@ -6,6 +6,7 @@ from typing import Dict, List
 
 # installed libs
 import numpy as np
+import pandas as pd
 from sentence_transformers import SentenceTransformer
 from scipy import spatial
 import yaml
@@ -38,8 +39,7 @@ def main(cfg):
 
     sim_matrix, categories = calc_similarity_matrix(selected_cat_embeds)
 
-    print(sim_matrix)
-    print(categories)
+    pd.DataFrame(sim_matrix, index=categories).to_csv("difference_matrix.csv")
 
     selected_cats = max_sim_categories(sim_matrix, categories)
 
@@ -131,8 +131,8 @@ def calc_similarity_matrix(embed_dict):
 
 
 def cosine_similarity(embed_1, embed_2):
-    return 1 - spatial.distance.cosine(embed_1, embed_2)
-    # return spatial.distance.cosine(embed_1, embed_2)
+    # return 1 - spatial.distance.cosine(embed_1, embed_2)
+    return spatial.distance.cosine(embed_1, embed_2)
 
 
 def max_sim_categories(sim_matrix, categories):
