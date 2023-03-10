@@ -42,7 +42,7 @@ parser.add_argument(
 parser.add_argument(
     "--epochs",
     type=int,
-    default=100,
+    default=2,
     help="Number of epochs used for training."
 )
 
@@ -81,14 +81,15 @@ def main(args):
         num_train_epochs=args.epochs,
         max_steps=args.max_steps,
         learning_rate=args.learning_rate,
-        lr_scheduler_type="constant",
-        evaluation_strategy="epoch",  # run validation at the end of each epoch
+        evaluation_strategy="steps",
         save_strategy="steps",
-        save_steps=500,
+        save_steps=5000,
+        eval_steps=5000,
         logging_steps=100,
-        save_total_limit=1,
+        save_total_limit=2,
         load_best_model_at_end=True,
         report_to="wandb",
+        fp16=True,
         seed=224
     )
 

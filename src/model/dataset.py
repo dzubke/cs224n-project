@@ -4,7 +4,7 @@ from datasets import load_dataset, DatasetDict, concatenate_datasets, Features, 
 from transformers import AutoTokenizer
 
 def encode_input_def_pos1(definition, input):
-    return "Definition: {} | Input: {}".format(definition, input)
+    return f"Definition: {definition}\nNow complete the following example−\ninput: {input}\noutput: "
 
 class TaskDataset:
     def __init__(self,  dataset_dir, train_file, test_file, model_name="t5-small"):
@@ -27,16 +27,18 @@ class TaskDataset:
         inputs['labels'] = labels
         return inputs
 
-
     def get_dataset(self):
         if not self.dataset_dir:
-            dataset = load_dataset("Muennighoff/natural-instructions")
-            dataset_dict = DatasetDict(train=dataset['train'], test=dataset['validation'])
+            dataset = load_dataset("jayelm/natural-instructions")
+            # First 100 instances in each task have eval=true.
+            test_data = dataset['test'].filter(lambda e: e['eval'] == True)
+            dataset_dict = DatasetDict(train=dataset['train'], test=test_data)
+            # Save space and remove these columns for now.
+            dataset_dict['test'] = dataset_dict['test'].remove_columns(['eval', 'pos_0_input', 'pos_0_output', 'pos_0_explanation', 'neg_0_input', 'neg_0_output', 'neg_0_explanation', 'pos_1_input', 'pos_1_output', 'pos_1_explanation', 'neg_1_input', 'neg_1_output', 'neg_1_explanation'])
+            dataset_dict['train'] = dataset_dict['train'].remove_columns(['eval', 'pos_0_input', 'pos_0_output', 'pos_0_explanation', 'neg_0_input', 'neg_0_output', 'neg_0_explanation', 'pos_1_input', 'pos_1_output', 'pos_1_explanation', 'neg_1_input', 'neg_1_output', 'neg_1_explanation'])            
         else:
             train_dataset = load_dataset('json', data_files=self.dataset_dir+"/"+self.train_file, field='data')['train']
             test_dataset = load_dataset('json', data_files=self.dataset_dir+"/"+self.test_file, field='data')['train']
             dataset_dict = DatasetDict(train=train_dataset, test=test_dataset)
-        pdb.set_trace()
-        tokenized = dataset_dict.map(self._tokenize_input_and_target, batched=True, batch_size=4, num_proc=4)
+        tokenized = dataset_dict.map(self._tokenize_input_and_target, batched=True, num_proc=6)
         return tokenized['train'], tokenized['test']
-
