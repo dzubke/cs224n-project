@@ -18,8 +18,14 @@ def compute_statistics():
     )
 
     count_dict = {
-        "train": {"category_to_instance": defaultdict(int), "task_to_instance": defaultdict(int)},
-        "test": {"category_to_instance": defaultdict(int), "task_to_instance": defaultdict(int)},
+        "train": {
+            "category_to_instance": defaultdict(lambda: defaultdict(int)),
+            "task_to_instance": defaultdict(int),
+        },
+        "test": {
+            "category_to_instance": defaultdict(lambda: defaultdict(int)),
+            "task_to_instance": defaultdict(int),
+        },
     }
     excluded_tasks = []
     for task_name, contents in data.items():
@@ -39,7 +45,9 @@ def compute_statistics():
 
         categories = contents[SupNatKeys.CATEGORIES.value]
         for cat in categories:
-            count_dict[split_key]["category_to_instance"][cat] += instance_count
+            count_dict[split_key]["category_to_instance"][cat]["total"] += instance_count
+            count_dict[split_key]["category_to_instance"][cat][task_name] = instance_count
+
         count_dict[split_key]["task_to_instance"][task_name] = instance_count
 
     count_dict = sort_by_count(count_dict)
@@ -61,20 +69,40 @@ def load_train_test_task_sets(data_path):
 
 def sort_by_count(count: dict) -> dict:
     for split_name in ["train", "test"]:
-        for count_name in ["category_to_instance", "task_to_instance"]:
-            count[split_name][count_name] = dict(
-                sorted(count[split_name][count_name].items(), key=lambda x: x[1], reverse=True)
+
+        # sort the tasks within a category
+        for cat_name in count[split_name]["category_to_instance"]:
+            count[split_name]["category_to_instance"][cat_name] = dict(
+                sorted(
+                    count[split_name]["category_to_instance"][cat_name].items(),
+                    key=lambda x: x[1],
+                    reverse=True,
+                )
             )
+
+        # sort the categories by the total task instances
+        count[split_name]["category_to_instance"] = dict(
+            sorted(
+                count[split_name]["category_to_instance"].items(),
+                key=lambda x: x[1]["total"],
+                reverse=True,
+            )
+        )
+
+        # sort task instances
+        count[split_name]["task_to_instance"] = dict(
+            sorted(count[split_name]["task_to_instance"].items(), key=lambda x: x[1], reverse=True)
+        )
     return count
 
 
-def plot_historgrams(split_name, count_name, bins=50, ticks=list(range(0, 500000, 20000)):
+def plot_historgrams(split_name, count_name, bins=50, ticks=list(range(0, 500000, 20000))):
     with open("split_instance_count.json", "r") as fid:
         count = json.load(fid)
 
     df = pd.DataFrame(count[split_name][count_name].items(), columns=[count_name, "count"])
     df["count"].plot.hist(grid=True, bins=bins, rwidth=0.9, color="#607c8e")
-    plt.xticks(ticks=))
+    plt.xticks(ticks=ticks)
     locs, labels = plt.xticks()
     plt.setp(labels, rotation=60)
     plt.xlabel("Task instance count")
