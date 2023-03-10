@@ -131,7 +131,8 @@ def calc_similarity_matrix(embed_dict):
 
 
 def cosine_similarity(embed_1, embed_2):
-    return spatial.distance.cosine(embed_1, embed_2)
+    return 1 - spatial.distance.cosine(embed_1, embed_2)
+    # return spatial.distance.cosine(embed_1, embed_2)
 
 
 def max_sim_categories(sim_matrix, categories):
