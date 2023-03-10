@@ -1,7 +1,7 @@
 import string
 import json
 import argparse
-from rouge import rouge_scorer
+from rouge_score import rouge_scorer
 from transformers import AutoTokenizer
 
 

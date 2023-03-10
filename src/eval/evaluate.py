@@ -1,4 +1,5 @@
 import argparse
+import pdb
 import json
 from typing import Dict, List, Union
 import pickle
@@ -12,17 +13,18 @@ from src.model.dataset import TaskDataset
 
 def write_predictions(run_name, model_path, verbose=False):
 
-    dataset = load_dataset("Muennighoff/natural-instructions")
-    val_dataset = dataset["validation"]
+    dataset = load_dataset("jayelm/natural-instructions")
+    test_data = dataset['test'].filter(lambda e: e['eval'] == True)
 
     model = T5ForConditionalGeneration.from_pretrained(model_path)
-    # train_ds, test_ds = TaskDataset(args.dataset_dir, args.train_file, args.test_file).get_dataset()
+
     task_dataset = TaskDataset(dataset_dir="", train_file="", test_file="")
-    tokenized_dataset = val_dataset.map(
+    tokenized_dataset = test_data.map(
         task_dataset._tokenize_input_and_target, batched=True, batch_size=4, num_proc=4
     )
     references = []
     predictions = []
+    total = len(tokenized_dataset)
     for i in range(len(tokenized_dataset)):
         example = tokenized_dataset[i]
         ids = example["input_ids"]
@@ -51,6 +53,7 @@ def write_predictions(run_name, model_path, verbose=False):
         if verbose:
             # inputs_decoded = task_dataset.tokenizer.batch_decode(inputs, skip_special_tokens=True)
             # print("inputs: ", inputs_decoded)
+            print(f"{i} of {total}")
             print("outputs:", outputs)
             print("reference:", [example["targets"]])
             print()
