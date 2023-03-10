@@ -28,6 +28,7 @@ def compute_statistics():
         },
     }
     excluded_tasks = []
+    excluded_count = 0
     for task_name, contents in data.items():
 
         if task_name in train_task_set:
@@ -36,6 +37,7 @@ def compute_statistics():
             split_key = "test"
         else:
             excluded_tasks.append(task_name)
+            excluded_count
             continue
 
         instance_count = 0
