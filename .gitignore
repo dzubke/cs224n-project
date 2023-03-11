@@ -139,3 +139,4 @@ checkpoints
 *.csv
 .DS_Store
 src/data/*/*.json
+*.jsonl
