@@ -13,7 +13,6 @@ class TaskDataset:
         self.train_file = train_file
         self.test_file = test_file
 
-
     def _tokenize_input_and_target(self, examples):
         input_strings = [encode_input_def_pos1(x,y) for x,y in zip(examples['definition'],examples['inputs'])]
         targets = examples['targets']
@@ -28,17 +27,17 @@ class TaskDataset:
         return inputs
 
     def get_dataset(self):
-        if not self.dataset_dir:
-            dataset = load_dataset("jayelm/natural-instructions")
-            # First 100 instances in each task have eval=true.
-            test_data = dataset['test'].filter(lambda e: e['eval'] == True)
-            dataset_dict = DatasetDict(train=dataset['train'], test=test_data)
-            # Save space and remove these columns for now.
-            dataset_dict['test'] = dataset_dict['test'].remove_columns(['eval', 'pos_0_input', 'pos_0_output', 'pos_0_explanation', 'neg_0_input', 'neg_0_output', 'neg_0_explanation', 'pos_1_input', 'pos_1_output', 'pos_1_explanation', 'neg_1_input', 'neg_1_output', 'neg_1_explanation'])
-            dataset_dict['train'] = dataset_dict['train'].remove_columns(['eval', 'pos_0_input', 'pos_0_output', 'pos_0_explanation', 'neg_0_input', 'neg_0_output', 'neg_0_explanation', 'pos_1_input', 'pos_1_output', 'pos_1_explanation', 'neg_1_input', 'neg_1_output', 'neg_1_explanation'])            
+        dataset = load_dataset("jayelm/natural-instructions")
+        if not self.train_file:
+            dataset['train'] = dataset['train'].remove_columns(['eval', 'pos_0_input', 'pos_0_output', 'pos_0_explanation', 'neg_0_input', 'neg_0_output', 'neg_0_explanation', 'pos_1_input', 'pos_1_output', 'pos_1_explanation', 'neg_1_input', 'neg_1_output', 'neg_1_explanation'])            
+            train_dataset = dataset['train']
         else:
-            train_dataset = load_dataset('json', data_files=self.dataset_dir+"/"+self.train_file, field='data')['train']
-            test_dataset = load_dataset('json', data_files=self.dataset_dir+"/"+self.test_file, field='data')['train']
-            dataset_dict = DatasetDict(train=train_dataset, test=test_dataset)
+            # Load custom training set.
+            train_dataset = load_dataset('json', data_files=self.train_file)['train']
+        # Save space and remove these columns for now.
+        # First 100 instances in each task have eval=true.
+        test_data = dataset['test'].filter(lambda e: e['eval'] == True)
+        test_data = test_data.remove_columns(['eval', 'pos_0_input', 'pos_0_output', 'pos_0_explanation', 'neg_0_input', 'neg_0_output', 'neg_0_explanation', 'pos_1_input', 'pos_1_output', 'pos_1_explanation', 'neg_1_input', 'neg_1_output', 'neg_1_explanation'])
+        dataset_dict = DatasetDict(train=train_dataset, test=test_data)
         tokenized = dataset_dict.map(self._tokenize_input_and_target, batched=True, num_proc=6)
         return tokenized['train'], tokenized['test']
