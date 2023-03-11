@@ -1,5 +1,5 @@
 
-from transformers import AutoModelForSeq2SeqLM, TrainingArguments, Trainer
+from transformers import AutoModelForSeq2SeqLM, TrainingArguments, Trainer, Seq2SeqTrainingArguments, Seq2SeqTrainer
 import torch
 import argparse
 from src.model.dataset import TaskDataset
@@ -74,30 +74,33 @@ def main(args):
     task_dataset = TaskDataset(args.dataset_dir, args.train_file, args.test_file, args.model_name)
     train_dataset, test_dataset = task_dataset.get_dataset()
     
-    arguments = TrainingArguments(
+    arguments = Seq2SeqTrainingArguments(
         output_dir="checkpoints/"+args.name,
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
         num_train_epochs=args.epochs,
         max_steps=args.max_steps,
         learning_rate=args.learning_rate,
+        predict_with_generate=True,
         evaluation_strategy="steps",
         save_strategy="steps",
-        save_steps=5000,
-        eval_steps=5000,
+        save_steps=500,
+        eval_steps=500,
         logging_steps=100,
         save_total_limit=2,
         load_best_model_at_end=True,
+        metric_for_best_model="rougeL",
         report_to="wandb",
         fp16=True,
         seed=224
     )
 
-    trainer = Trainer(
+    trainer = Seq2SeqTrainer(
         model=model,
         args=arguments,
         train_dataset=train_dataset,
         eval_dataset=test_dataset,
+        compute_metrics=task_dataset.compute_metrics,
     )
 
     trainer.train()
