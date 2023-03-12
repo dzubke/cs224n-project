@@ -8,7 +8,7 @@ from typing import Dict, List
 import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
-from scipy import spatial
+from scipy import spatial, special
 import yaml
 
 # project libs
@@ -17,15 +17,16 @@ from src.data_utils.load_data import load_semantic_sim_data
 
 def main(cfg):
 
-    data, task_to_categories = load_semantic_sim_data(cfg["data_path"])
-
     if cfg.get("load_embeddings", None):
         embeddings_dict = load_json(cfg["embedding_path"])
+        task_to_categories = load_json(cfg["task_to_categories_path"])
     else:
+        data, task_to_categories = load_semantic_sim_data(cfg["data_path"])
         model = load_semantic_sim_model(cfg["model_name"])
         embeddings_dict = calc_embeddings(model, data)
         # print(list(embeddings_dict.items())[:3])
         save_json(embeddings_dict, cfg["embedding_path"])
+        save_json(task_to_categories, cfg["task_to_categories_path"])
 
     if cfg["embedding_aggregation"] == "mean":
         category_mean_embed = average_embeddings_by_category(embeddings_dict, task_to_categories)
@@ -36,16 +37,28 @@ def main(cfg):
     selected_cat_embeds = {
         cat: emb for cat, emb in category_mean_embed.items() if cat in selected_cats
     }
+    sim_matrix, categories = calc_similarity_matrix(
+        selected_cat_embeds, score_type=cfg["similarity_score_type"]
+    )
 
-    sim_matrix, categories = calc_similarity_matrix(selected_cat_embeds)
+    pd.DataFrame(sim_matrix, index=categories).to_csv(f"{cfg['similarity_score_type']}_matrix.csv_")
 
-    pd.DataFrame(sim_matrix, index=categories).to_csv("difference_matrix.csv")
+    selected_cats = get_seed_categories(sim_matrix, categories, min_or_max=cfg["min_or_max"])
 
-    selected_cats = max_sim_categories(sim_matrix, categories)
+    selected_cats = approx_select_cats(
+        selected_cats, selected_cat_embeds, num_selected=10, min_or_max=cfg["min_or_max"]
+    )
 
-    selected_cats = approx_select_cats(selected_cats, selected_cat_embeds, 10)
+    print(f"all cats: {categories}")
+    print(f"selected cats: {selected_cats}")
 
-    print(f"selected: {selected_cats}")
+    cat_to_ind = {cat: i for i, cat in enumerate(categories)}
+    selected_cat_indices = [cat_to_ind[cat] for cat in selected_cats]
+
+    normalized_sim_score = calc_normalized_sim_score(selected_cat_indices, sim_matrix)
+    print(
+        f"sim_score: {normalized_sim_score} for score_type: {cfg['similarity_score_type']} and min_max: {cfg['min_or_max']}"
+    )
 
 
 def load_config(config_path: str) -> dict:
@@ -116,13 +129,15 @@ def select_categories_by_instance_threshold(count_path, count_threshold=40_000):
     return selected_categories
 
 
-def calc_similarity_matrix(embed_dict):
+def calc_similarity_matrix(embed_dict, score_type="similarity"):
     num_embeddings = len(embed_dict)
     cat_embed_list = list(embed_dict.items())
     sim_matrix = np.zeros((num_embeddings, num_embeddings))
     for i in range(num_embeddings):
         for j in range(i + 1, num_embeddings):
-            sim_score = cosine_similarity(cat_embed_list[i][1], cat_embed_list[j][1])
+            sim_score = cosine_similarity(
+                cat_embed_list[i][1], cat_embed_list[j][1], score_type=score_type
+            )
             sim_matrix[i][j] = sim_score
             sim_matrix[j][i] = sim_score
 
@@ -130,17 +145,29 @@ def calc_similarity_matrix(embed_dict):
     return sim_matrix, categories
 
 
-def cosine_similarity(embed_1, embed_2):
-    # return 1 - spatial.distance.cosine(embed_1, embed_2)
-    return spatial.distance.cosine(embed_1, embed_2)
+def cosine_similarity(embed_1, embed_2, score_type="similarity"):
+    if score_type == "similarity":
+        score = 1 - spatial.distance.cosine(embed_1, embed_2)
+    elif score_type == "difference":
+        score = spatial.distance.cosine(embed_1, embed_2)
+    else:
+        raise ValueError(f"score_type: {score_type} must be in ['similarity', 'difference']")
+    return score
 
 
-def max_sim_categories(sim_matrix, categories):
-    max_indices = np.unravel_index(sim_matrix.argmax(), sim_matrix.shape)
-    return categories[max_indices[0]], categories[max_indices[1]]
+def get_seed_categories(sim_matrix, categories, min_or_max="max"):
+    if min_or_max == "max":
+        max_min_value = sim_matrix.argmax()
+    else:
+        copy_sim_matrix = np.copy(sim_matrix)
+        np.fill_diagonal(copy_sim_matrix, float("inf"))
+        max_min_value = copy_sim_matrix.argmin()
+
+    indices = np.unravel_index(max_min_value, sim_matrix.shape)
+    return categories[indices[0]], categories[indices[1]]
 
 
-def approx_select_cats(selected_cats, selected_cat_embeds, num_selected=10):
+def approx_select_cats(selected_cats, selected_cat_embeds, num_selected=10, min_or_max="max"):
     running_mean_embed = (
         selected_cat_embeds[selected_cats[0]] + selected_cat_embeds[selected_cats[1]]
     ) / 2
@@ -149,12 +176,14 @@ def approx_select_cats(selected_cats, selected_cat_embeds, num_selected=10):
         similarities = []
         for cat, embed in selected_cat_embeds.items():
             if cat in selected_cats:
-                sim = -float("inf")
+                sim = -float("inf") if min_or_max == "max" else float("inf")
             else:
                 sim = cosine_similarity(running_mean_embed, embed)
             similarities.append(sim)
 
-        iter_selected_cat_ind = np.argmax(similarities)
+        iter_selected_cat_ind = (
+            np.argmax(similarities) if min_or_max == "max" else np.argmin(similarities)
+        )
         iter_selected_cat = list(selected_cat_embeds)[iter_selected_cat_ind]
         running_mean_embed = (
             running_mean_embed * len(selected_cats) + selected_cat_embeds[iter_selected_cat]
@@ -162,6 +191,30 @@ def approx_select_cats(selected_cats, selected_cat_embeds, num_selected=10):
         selected_cats.append(iter_selected_cat)
 
     return selected_cats
+
+
+def calc_normalized_sim_score(selected_cat_indices, sim_matrix):
+    num_selected_cats = len(selected_cat_indices)
+    total_sim_score = 0
+    for i in range(num_selected_cats):
+        for j in range(i + 1, num_selected_cats):
+            total_sim_score += sim_matrix[selected_cat_indices[i]][selected_cat_indices[j]]
+
+    num_nodes = len(selected_cat_indices)
+    num_edges = special.comb(num_nodes, 2)
+    normalized_sim_score = total_sim_score / num_edges
+
+    return normalized_sim_score
+
+
+def compute_total_sim_score(cats, sim_matrix):
+    num_cats = len(cats)
+    total_sim_score = 0
+    for i in range(num_cats):
+        for j in range(i + 1, num_cats):
+            total_sim_score += sim_matrix[cats[i]][cats[j]]
+
+    return total_sim_score
 
 
 if __name__ == "__main__":

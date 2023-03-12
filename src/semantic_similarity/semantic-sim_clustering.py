@@ -24,14 +24,22 @@ def main(cfg):
 
     if cfg.get("load_embeddings", None):
         embeddings_dict = load_json(cfg["embedding_path"])
+        task_to_categories = load_json(cfg["task_to_categories_path"])
     else:
         model = load_semantic_sim_model(cfg["model_name"])
         embeddings_dict = calc_embeddings(model, data)
         # print(list(embeddings_dict.items())[:3])
-        save_json(embeddings_dict, cfg["embedding_path"])
+        save_json(embeddings_dict, cfg["task_to_categories_path"])
 
     if cfg["embedding_aggregation"] == "mean":
         category_mean_embed = average_embeddings_by_category(embeddings_dict, task_to_categories)
+
+    if cfg["sub_select_categories"]:
+        category_mean_embed = {
+            cat: emb
+            for cat, emb in category_mean_embed.items()
+            if cat in cfg["selected_categories"]
+        }
 
     if cfg["use_elbow_method"]:
         mean_matrix = np.asarray(list(category_mean_embed.values()))
@@ -48,7 +56,10 @@ def main(cfg):
             )
             labels = clustering.labels_
             embeddings_pca = get_pca_embeddings(category_mean_embed)
-            run_label = f'{cfg["model_name"]}_{cfg["clustering_method"]}_{num_clusters}_{cfg["distance_threshold"]}'
+            select_label = "sub-select" if cfg["sub_select_categories"] else "all-cats"
+            run_label = (
+                f'{cfg["model_name"]}_{cfg["clustering_method"]}_{num_clusters}_{select_label}'
+            )
             save_pca_plot(embeddings_pca, labels, run_label)
             cluster_to_category = get_cluster_to_category(category_mean_embed, labels)
             save_json(cluster_to_category, f"clusters/clusters_{run_label}.json")

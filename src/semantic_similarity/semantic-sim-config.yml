@@ -2,9 +2,14 @@ data_path: '/Users/dustin/Documents/School/1_stanford/classes/cs224n/project/dat
 model_name: 'all-mpnet-base-v2' #'all-MiniLM-L6-v2'
 load_embeddings: True
 embedding_path: '/Users/dustin/Documents/School/1_stanford/classes/cs224n/project/cs224n-project/src/semantic_similarity/embeddings_mpnet_cat-def-exam.json'
+task_to_categories_path: '/Users/dustin/Documents/School/1_stanford/classes/cs224n/project/cs224n-project/src/semantic_similarity/task_to_categories.json'
 embedding_aggregation: 'mean' # could be 'mean' or other values
 clustering_method: 'kmeans'
-use_elbow_method: True
+use_elbow_method: False
+similarity_score_type: 'similarity' #'difference'
+min_or_max: 'max' # 'min' #
 num_clusters: 
-  - 42
+  - 8
 distance_threshold: 
+sub_select_categories: True   # only use a subset of the total categoriess
+selected_categories: ['Toxic Language Detection', 'Text Completion', 'Question Answering', 'Misc.', 'Fill in The Blank', 'Sentiment Analysis', 'Program Execution', 'Question Generation', 'Text to Code', 'Summarization', 'Text Categorization', 'Information Extraction', 'Wrong Candidate Generation', 'Commonsense Classification', 'Text Matching', 'Question Understanding', 'Story Composition', 'Pos Tagging', 'Dialogue Generation', 'Linguistic Probing', 'Code to Text']

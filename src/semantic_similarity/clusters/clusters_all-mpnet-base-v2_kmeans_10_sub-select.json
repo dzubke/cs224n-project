@@ -1,0 +1,43 @@
+{
+    "5": [
+        "Toxic Language Detection"
+    ],
+    "4": [
+        "Text Completion",
+        "Story Composition"
+    ],
+    "8": [
+        "Question Answering",
+        "Question Generation",
+        "Summarization",
+        "Wrong Candidate Generation",
+        "Question Understanding"
+    ],
+    "1": [
+        "Misc.",
+        "Fill in The Blank",
+        "Text Categorization",
+        "Information Extraction",
+        "Commonsense Classification",
+        "Text Matching"
+    ],
+    "6": [
+        "Sentiment Analysis"
+    ],
+    "9": [
+        "Program Execution"
+    ],
+    "2": [
+        "Text to Code",
+        "Code to Text"
+    ],
+    "7": [
+        "Pos Tagging"
+    ],
+    "3": [
+        "Dialogue Generation"
+    ],
+    "0": [
+        "Linguistic Probing"
+    ]
+}
