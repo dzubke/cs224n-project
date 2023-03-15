@@ -75,5 +75,4 @@ class TaskDataset:
         result = {k: round(v * 100, 4) for k, v in result.items()}
         prediction_lens = [np.count_nonzero(pred != self.tokenizer.pad_token_id) for pred in preds]
         result["gen_len"] = np.mean(prediction_lens)
-        print(result.keys())
         return result
