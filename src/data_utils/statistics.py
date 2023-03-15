@@ -112,5 +112,22 @@ def plot_historgrams(split_name, count_name, bins=50, ticks=list(range(0, 500000
     plt.show()
 
 
+def calc_hist_from_input(embed_names, embed_to_val_path, write_path):
+    with open(embed_to_val_path, "r") as fid:
+        embed_to_val = json.load(fid)
+
+    val_count = defaultdict(int)
+    for name in embed_names:
+        val = embed_to_val[name]
+        if isinstance(val, list):
+            assert len(val) == 1
+            val = val[0]
+        val_count[val] += 1
+
+    val_count = dict(sorted(val_count.items(), key=lambda x: x[1], reverse=True))
+    with open(write_path, "w") as fid:
+        json.dump(val_count, fid)
+
+
 if __name__ == "__main__":
     compute_statistics()
