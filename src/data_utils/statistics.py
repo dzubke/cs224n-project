@@ -4,6 +4,7 @@ import os
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from sklearn.metrics.cluster import pair_confusion_matrix
 
 from src.data_utils.load_data import load_task_data
 from structures import SupNatKeys, InstanceKeys
@@ -127,6 +128,34 @@ def calc_hist_from_input(embed_names, embed_to_val_path, write_path):
     val_count = dict(sorted(val_count.items(), key=lambda x: x[1], reverse=True))
     with open(write_path, "w") as fid:
         json.dump(val_count, fid)
+
+
+def calc_cluster_pair_confusion_matrix(cluster_path, task_to_category_path):
+
+    with open(task_to_category_path, "r") as fid:
+        task_to_cat = json.load(fid)
+
+    with open(cluster_path, "r") as fid:
+        cluster_to_task = json.load(fid)
+
+    assert all([len(x) == 1 for x in task_to_cat.values()])
+    sorted_cats = sorted(set(x[0] for x in task_to_cat.values()))
+    cat_to_int = {cat: i for i, cat in enumerate(sorted_cats)}
+    cat_task_set = set(task_to_cat)
+    clust_task_set = set([task for tasks in cluster_to_task.values() for task in tasks])
+    assert cat_task_set == clust_task_set
+    sorted_tasks = sorted(cat_task_set)
+
+    task_to_cluster = {}
+    for cluster, tasks in cluster_to_task.items():
+        for task in tasks:
+            task_to_cluster[task] = cluster
+
+    category_cluster_list = [cat_to_int[task_to_cat[task][0]] for task in sorted_tasks]
+    cluster_cluster_list = [task_to_cluster[task] for task in sorted_tasks]
+
+    confusion_matrix = pair_confusion_matrix(category_cluster_list, cluster_cluster_list)
+    print(confusion_matrix)
 
 
 if __name__ == "__main__":
