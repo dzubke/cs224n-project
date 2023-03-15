@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 from typing import Dict, List, Tuple
+import random
 
 from src.data_utils.structures import (
     ExampleKeys,
@@ -109,3 +110,33 @@ def extract_examples(examples: List[Dict[str, str]], example_type) -> str:
 
 def extract_task_outputs(outputs) -> str:
     return outputs[0]
+
+def get_all_instances(dataset_path :str, tasks : List[str], sample_num):
+    """Given a list of tasks, return a list of task instance objects used for training."""
+    instances = []
+    for task in tasks:
+        if task == "total":
+            continue
+        try:
+            filepath = Path(dataset_path) / "tasks" / f"{task}.json"
+            ds = read_json_file(filepath)[task]
+        except:
+            print(f"ERROR. {filepath} does not exist.")
+            continue
+        print(task, len(ds['Instances']))
+        temp_instances = []
+        for instance in ds['Instances']:
+            for output in instance['output']:
+                temp_instances.append({
+                    "task_name": task,
+                    "id": instance['id'],
+                    # Why is definition a list?
+                    "definition": ds['Definition'][0],
+                    "inputs": instance['input'],
+                    "targets": output
+                })
+        samples = random.sample(temp_instances, sample_num)
+        instances += samples
+    return instances
+
+    
