@@ -6,27 +6,21 @@ import pickle
 
 from datasets import load_dataset, Dataset, DatasetDict
 from transformers import T5ForConditionalGeneration
+from tqdm import tqdm
 import torch
 
 from src.model.dataset import TaskDataset
 
 
 def write_predictions(run_name, model_path, verbose=False):
-
-    dataset = load_dataset("jayelm/natural-instructions")
-    test_data = dataset['test'].filter(lambda e: e['eval'] == True)
-
     model = T5ForConditionalGeneration.from_pretrained(model_path)
-
-    task_dataset = TaskDataset(dataset_dir="", train_file="", test_file="")
-    tokenized_dataset = test_data.map(
-        task_dataset._tokenize_input_and_target, batched=True, batch_size=4, num_proc=4
-    )
+    task_dataset= TaskDataset(dataset_dir="", train_file="", test_file="")
+    tokenized_test_data = task_dataset.get_test_dataset()
     references = []
     predictions = []
-    total = len(tokenized_dataset)
-    for i in range(len(tokenized_dataset)):
-        example = tokenized_dataset[i]
+    total = len(tokenized_test_data)
+    for i in tqdm(range(len(tokenized_test_data))):
+        example = tokenized_test_data[i]
         ids = example["input_ids"]
         inputs = torch.IntTensor(ids)
         inputs = inputs.unsqueeze(dim=0)

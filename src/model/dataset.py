@@ -28,6 +28,7 @@ class TaskDataset:
         self.dataset_dir = dataset_dir
         self.train_file = train_file
         self.test_file = test_file
+        self.dataset = load_dataset("jayelm/natural-instructions")
         self.metric = evaluate.load("rouge")
 
     def _tokenize_input_and_target(self, examples):
@@ -42,6 +43,12 @@ class TaskDataset:
 
         inputs['labels'] = labels
         return inputs
+    
+    def get_test_dataset(self):
+        test_data = self.dataset['test'].filter(lambda e: e['eval'] == True)
+        test_data = test_data.remove_columns(['eval', 'pos_0_input', 'pos_0_output', 'pos_0_explanation', 'neg_0_input', 'neg_0_output', 'neg_0_explanation', 'pos_1_input', 'pos_1_output', 'pos_1_explanation', 'neg_1_input', 'neg_1_output', 'neg_1_explanation'])
+        tokenized = test_data.map(self._tokenize_input_and_target, batched=True, num_proc=4)
+        return tokenized
 
     def get_dataset(self):
         dataset = load_dataset("jayelm/natural-instructions")
