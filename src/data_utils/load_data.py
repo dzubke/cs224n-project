@@ -15,13 +15,15 @@ from src.data_utils.structures import (
 
 JOIN_STR = "__"
 
+
 def load_tasks_set(tasks_path):
     """Reads the tasks from the path and returns a set."""
     tasks = set()
-    with open(tasks_path, 'r') as f:
+    with open(tasks_path, "r") as f:
         for line in f.readlines():
             tasks.add(line.strip())
     return tasks
+
 
 def load_task_data(data_path):
     data_path = Path(data_path)
@@ -44,11 +46,15 @@ def load_semantic_sim_data(data_path: str) -> dict:
     raw_dataset: DATASET = load_task_data(data_path)
     output = {}
     task_to_category = {}
+    task_to_source = {}
     for task_filename, file_contents in raw_dataset.items():
-        extracted_contents, task_to_cat = extract_contents(task_filename, file_contents)
+        extracted_contents, task_to_cat, task_to_src = extract_contents(
+            task_filename, file_contents
+        )
         output.update(extracted_contents)
         task_to_category.update(task_to_cat)
-    return output, task_to_category
+        task_to_source.update(task_to_src)
+    return output, task_to_category, task_to_source
 
 
 def extract_contents(
@@ -71,6 +77,7 @@ def extract_contents(
 
     extracted_contents = {task_filename: output_str}
     task_to_categories = {task_filename: file_contents[SupNatKeys.CATEGORIES.value]}
+    task_to_source = {task_filename: file_contents[SupNatKeys.SOURCE.value]}
 
     ## not considering task instances yet
     # for task_instance in file_contents[SupNatKeys.INSTANCES.value]:
@@ -87,7 +94,7 @@ def extract_contents(
     #     full_id = task_filename + JOIN_STR + task_id
     #     extracted_contents.update({full_id: output_str})
 
-    return extracted_contents, task_to_categories
+    return extracted_contents, task_to_categories, task_to_source
 
 
 def extract_examples(examples: List[Dict[str, str]], example_type) -> str:
@@ -102,5 +109,3 @@ def extract_examples(examples: List[Dict[str, str]], example_type) -> str:
 
 def extract_task_outputs(outputs) -> str:
     return outputs[0]
-
-    
