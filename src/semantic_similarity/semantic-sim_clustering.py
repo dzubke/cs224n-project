@@ -16,6 +16,12 @@ from yellowbrick.cluster import KElbowVisualizer
 
 # project libs
 from src.data_utils.load_data import load_semantic_sim_data
+from src.semantic_similarity.cluster import (
+    get_embedding_clusters,
+    get_pca_embeddings,
+    save_pca_plot,
+    get_cluster_to_category,
+)
 
 
 def main(cfg):
@@ -24,17 +30,35 @@ def main(cfg):
 
     if cfg.get("load_embeddings", None):
         embeddings_dict = load_json(cfg["embedding_path"])
+        task_to_categories = load_json(cfg["task_to_categories_path"])
     else:
         model = load_semantic_sim_model(cfg["model_name"])
         embeddings_dict = calc_embeddings(model, data)
         # print(list(embeddings_dict.items())[:3])
-        save_json(embeddings_dict, cfg["embedding_path"])
+        save_json(embeddings_dict, cfg["task_to_categories_path"])
 
     if cfg["embedding_aggregation"] == "mean":
-        category_mean_embed = average_embeddings_by_category(embeddings_dict, task_to_categories)
+        embeddings_dict = average_embeddings_by_category(embeddings_dict, task_to_categories)
+
+    if cfg["sub_select_categories"]:
+        selected_embeddings_dict = {
+            cat: emb for cat, emb in embeddings_dict.items() if cat in cfg["selected_categories"]
+        }
+
+    # if cfg["aggregate_embeddings"]:
+    #     embeddings_dict = average_embeddings_by_category(embeddings_dict, task_to_categories)
+    # else:
+    #     embeddings_dict = {key: np.asarray(embed) for key, embed in embeddings_dict.items()}
+
+    # if cfg["sub_select_embeddings"]:
+    #     selected_embed_names = select_categories_by_instance_threshold(
+    #         cfg["instance_count_path"], cfg["instance_count_threshold"]
+    #     )
+    # else:
+    #     selected_embed_names = list(embeddings_dict)
 
     if cfg["use_elbow_method"]:
-        mean_matrix = np.asarray(list(category_mean_embed.values()))
+        mean_matrix = np.asarray(list(selected_embeddings_dict.values()))
         model = cluster.KMeans()
         visualizer = KElbowVisualizer(
             model, k=(2, 75), metric="distortion", timings=False
@@ -44,13 +68,16 @@ def main(cfg):
     else:
         for num_clusters in cfg["num_clusters"]:
             clustering = get_embedding_clusters(
-                category_mean_embed, num_clusters, cfg["distance_threshold"]
+                selected_embeddings_dict, num_clusters, cfg["distance_threshold"]
             )
             labels = clustering.labels_
-            embeddings_pca = get_pca_embeddings(category_mean_embed)
-            run_label = f'{cfg["model_name"]}_{cfg["clustering_method"]}_{num_clusters}_{cfg["distance_threshold"]}'
+            embeddings_pca = get_pca_embeddings(selected_embeddings_dict)
+            select_label = "sub-select" if cfg["sub_select_categories"] else "all-cats"
+            run_label = (
+                f'{cfg["model_name"]}_{cfg["clustering_method"]}_{num_clusters}_{select_label}'
+            )
             save_pca_plot(embeddings_pca, labels, run_label)
-            cluster_to_category = get_cluster_to_category(category_mean_embed, labels)
+            cluster_to_category = get_cluster_to_category(selected_embeddings_dict, labels)
             save_json(cluster_to_category, f"clusters/clusters_{run_label}.json")
 
 
@@ -108,47 +135,6 @@ def calc_mean_embeddings(category_embedings: Dict[str, List[List[str]]]) -> Dict
         assert mean_embed.shape[0] == embeddings[0].shape[0]
         cat_mean_embed[cat] = mean_embed
     return cat_mean_embed
-
-
-def get_embedding_clusters(category_mean_embed, num_clusters=None, distance_threshold=None):
-    mean_matrix = np.asarray(list(category_mean_embed.values()))
-    # cluster_model = cluster.AgglomerativeClustering(
-    #     n_clusters=num_clusters, compute_distances=True, distance_threshold=distance_threshold
-    # )
-    cluster_model = cluster.KMeans(n_clusters=num_clusters)
-    clustering = cluster_model.fit(mean_matrix)
-    return clustering
-
-
-def get_pca_embeddings(category_mean_embed):
-    mean_matrix = np.asarray(list(category_mean_embed.values()))
-    embeddings_pca = PCA(n_components=2).fit_transform(mean_matrix)
-    return embeddings_pca
-
-
-def save_pca_plot(embedding_pca, cluster_labels, run_label):
-    df = combine_pca_labels_as_df(embedding_pca, cluster_labels)
-    unique_labels = np.unique(cluster_labels)
-    for i in unique_labels:
-        plt.scatter(df[df.label == i]["dim1"], df[df.label == i]["dim2"], label=i)
-    plt.legend()
-    plt.savefig(f"plots/pca_plot_{run_label}.png")
-    # plt.show()
-    plt.clf()
-
-
-def combine_pca_labels_as_df(pca, labels):
-    labels = np.expand_dims(labels, axis=-1)
-    combined = np.concatenate((pca, labels), axis=-1)
-    return pd.DataFrame(combined, columns=["dim1", "dim2", "label"])
-
-
-def get_cluster_to_category(category_dict, labels):
-    cat_to_cluster = {cat: int(clust) for cat, clust in zip(category_dict.keys(), labels)}
-    cluster_to_cat = defaultdict(list)
-    for cat, cluster in cat_to_cluster.items():
-        cluster_to_cat[cluster].append(cat)
-    return cluster_to_cat
 
 
 def calc_cosine_similarity(embeddings):

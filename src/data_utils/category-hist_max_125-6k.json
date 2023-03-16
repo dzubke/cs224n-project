@@ -1,0 +1,22 @@
+{
+    "Program Execution": 52,
+    "Question Answering": 17,
+    "Commonsense Classification": 17,
+    "Text to Code": 4,
+    "Question Generation": 4,
+    "Text Categorization": 4,
+    "Misc.": 4,
+    "Code to Text": 3,
+    "Mathematics": 3,
+    "Question Understanding": 3,
+    "Fill in The Blank": 2,
+    "Summarization": 2,
+    "Information Extraction": 2,
+    "Word Semantics": 2,
+    "Question Decomposition": 1,
+    "Grammar Error Detection": 1,
+    "Answer Verification": 1,
+    "Fact Verification": 1,
+    "Wrong Candidate Generation": 1,
+    "Text Completion": 1
+}
