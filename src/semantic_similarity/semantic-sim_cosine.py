@@ -25,18 +25,17 @@ from src.semantic_similarity.cluster import (
 
 def main(cfg):
 
-    data, task_to_categories, task_to_source = load_semantic_sim_data(cfg["data_path"])
-    save_json(task_to_source, cfg["task_to_source_path"])
-
     if cfg.get("load_embeddings", None):
         embeddings_dict = load_json(cfg["embedding_path"])
         task_to_categories = load_json(cfg["task_to_categories_path"])
     else:
+        data, task_to_categories, task_to_source = load_semantic_sim_data(cfg["data_path"])
         model = load_semantic_sim_model(cfg["model_name"])
         embeddings_dict = calc_embeddings(model, data)
         # print(list(embeddings_dict.items())[:3])
         save_json(embeddings_dict, cfg["embedding_path"])
         save_json(task_to_categories, cfg["task_to_categories_path"])
+        save_json(task_to_source, cfg["task_to_source_path"])
 
     if cfg["embed_type"] == "category":
         embeddings_dict = average_embeddings_by_category(embeddings_dict, task_to_categories)
@@ -77,6 +76,14 @@ def main(cfg):
 
         print(f"selected names: {grouped_embed_names}")
         print(f"sim_score: {round(normalized_sim_score, 4)} for min_max: {cfg['min_or_max']}")
+        sim_diff_name = "sim" if cfg["min_or_max"] == "max" else "diff"
+        group_filepath = (
+            f"grouping/{sim_diff_name}_size-{cfg['group_size']}_{cfg['embed_type']}.json"
+        )
+        with open(group_filepath, "w") as fid:
+            json.dump(grouped_embed_names, fid)
+        with open(group_filepath.replace(".json", "_sim-score.txt"), "w") as fid:
+            fid.write(str(round(normalized_sim_score, 4)))
 
     elif cfg["grouping_method"] == "clustering":
         if cfg["use_elbow_method"]:
