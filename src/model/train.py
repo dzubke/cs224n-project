@@ -41,13 +41,6 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--learning_rates",
-    type=str,
-    default="1e-4",
-    help="Learning rate used for training."
-)
-
-parser.add_argument(
     "--epochs",
     type=int,
     default=2,
@@ -74,28 +67,14 @@ parser.add_argument(
     help="Name of the experiment. This determines where the checkpoints are saved."
 )
 
-def wandb_hp_space(trial):
-    return {
-        "method": "random",
-        "metric": {"name": "rougeL", "goal": "maximize"},
-        "early_terminate": {"type":"hyperband", "min_iter": 3},
-        "parameters": {
-            "learning_rate": {"distribution": "uniform", "min": 5e-6, "max": 1e-3},
-            # "per_device_train_batch_size": {"values": [32]},
-        },
-    }
-
-def compute_objective(metrics):
-    return metrics['rougeL']
-
 def model_init():
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     model = AutoModelForSeq2SeqLM.from_pretrained("t5-small").to(device)
     return model
 
-def train(args, train_file, learning_rate):
+def train(args, train_file):
     name = train_file.split("/")[-1].split(".")[0]
-    description = f"{name}-{learning_rate}"
+    description = f"{name}-{args.learning_rate}"
     run = wandb.init(reinit=True, name=description)
     print(f"training {description}")
 
@@ -104,7 +83,7 @@ def train(args, train_file, learning_rate):
 
     arguments = Seq2SeqTrainingArguments(
         output_dir=f"checkpoints/{description}",
-        learning_rate=learning_rate,
+        learning_rate=args.learning_rate,
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
         num_train_epochs=args.epochs,
@@ -138,8 +117,7 @@ def main(args):
     print("Using device: ", device)
     model = model_init()
     for train_file in args.train_file.split(","):
-        for lr in args.learning_rates.split(","):
-            train(args, train_file, float(lr))
+        train(args, train_file)
 
 if __name__=="__main__":
     main(parser.parse_args())
