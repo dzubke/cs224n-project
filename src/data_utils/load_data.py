@@ -123,7 +123,6 @@ def get_all_instances(dataset_path :str, tasks : List[str], sample_num):
         except:
             print(f"ERROR. {filepath} does not exist.")
             continue
-        print(task, len(ds['Instances']))
         temp_instances = []
         for instance in ds['Instances']:
             for output in instance['output']:

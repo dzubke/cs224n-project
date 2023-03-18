@@ -54,6 +54,22 @@ if __name__=="__main__":
                         "inputs": instance['input'],
                         "targets": output
                     })
+    total_tasks = 0
+    for key,value in different_categories_map.items():
+        tasks = set()
+        for instance in value:
+            tasks.add(instance['task_name'])            
+        total_tasks += len(tasks)
+    print("different", total_tasks)
+
+    total_tasks = 0
+    for key,value in similar_categories_map.items():
+        tasks = set()
+        for instance in value:
+            tasks.add(instance['task_name'])            
+        total_tasks += len(tasks)
+    print("similar", total_tasks)
+    
     similar_categories_sampled = {}
     different_categories_sampled = {}
     print("Similar categories")
