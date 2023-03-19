@@ -252,7 +252,10 @@ def calc_normalized_sim_score(selected_cat_indices, sim_matrix):
     return normalized_sim_score
 
 
-def calc_norm_sim_score_from_csv(cats, sim_matrix_path):
+def calc_norm_sim_score_from_csv(group_path, sim_matrix_path):
+    with open(group_path) as fid:
+        cats = json.load(fid)
+
     with open(sim_matrix_path) as fid:
         sim_matrix = pd.read_csv(fid, header=0, index_col=0)
 
