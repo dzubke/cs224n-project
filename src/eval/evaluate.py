@@ -12,7 +12,9 @@ import torch
 from src.model.dataset import TaskDataset
 
 
-def write_predictions(run_name, model_path, test_file, verbose=False):
+def write_predictions(model_path, test_file, verbose=False):
+    run_name = model_path.split("/")[-2]
+    print(f"Evaluating {run_name} on {test_file}")
     model = T5ForConditionalGeneration.from_pretrained(model_path)
     task_dataset= TaskDataset(dataset_dir="", train_file="", test_file=test_file)
     tokenized_test_data = task_dataset.get_test_dataset()
@@ -76,10 +78,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-v", "--verbose", action="store_true")
-    parser.add_argument("--run-name", type=str)
     parser.add_argument("--model-path", type=str)
     parser.add_argument("--test-file", type=str)
 
     args = parser.parse_args()
 
-    write_predictions(verbose=args.verbose, run_name=args.run_name, model_path=args.model_path, test_file=args.test_file)
+    write_predictions(verbose=args.verbose, model_path=args.model_path, test_file=args.test_file)

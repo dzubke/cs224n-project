@@ -48,7 +48,7 @@ class TaskDataset:
     def get_test_dataset(self):
         # Load custom training set.
         test_dataset = load_dataset('json', data_files=self.test_file)['train']
-        tokenized = test_dataset.map(self._tokenize_input_and_target, batched=True, num_proc=4)
+        tokenized = test_dataset.map(self._tokenize_input_and_target, batched=True)
         return tokenized
 
     def get_dataset(self):
@@ -68,7 +68,7 @@ class TaskDataset:
             test_dataset = load_dataset('json', data_files=self.test_file)['train']
 
         dataset_dict = DatasetDict(train=train_dataset, test=test_dataset)
-        tokenized = dataset_dict.map(self._tokenize_input_and_target, batched=True, num_proc=6)
+        tokenized = dataset_dict.map(self._tokenize_input_and_target, batched=True, load_from_cache_file=True, cache_file_names={"train": "cache/train_cache.arrow", "test":"cache/test_cache.arrow"}, num_proc=6)
         return tokenized['train'], tokenized['test']
     
     def compute_metrics(self, eval_preds):

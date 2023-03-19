@@ -140,3 +140,4 @@ checkpoints
 .DS_Store
 src/data/*/*.json
 *.jsonl
+*.arrow

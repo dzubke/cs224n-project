@@ -34,11 +34,25 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--gradient_accumulation_steps",
+    type=int,
+    default=1,
+)
+
+parser.add_argument(
     "--learning_rate",
     type=float,
     default=1e-4,
     help="Learning rate used for training."
 )
+
+parser.add_argument(
+    "--lr_scheduler_type",
+    type=str,
+    default="linear",
+    help="linear or constant"
+)
+
 
 parser.add_argument(
     "--epochs",
@@ -67,11 +81,6 @@ parser.add_argument(
     help="Name of the experiment. This determines where the checkpoints are saved."
 )
 
-def model_init():
-    device = "cuda:0" if torch.cuda.is_available() else "cpu"
-    model = AutoModelForSeq2SeqLM.from_pretrained("t5-small").to(device)
-    return model
-
 def train(args, model, train_file):
     name = train_file.split("/")[-1].split(".")[0]
     description = f"{name}-{args.learning_rate}"
@@ -84,9 +93,11 @@ def train(args, model, train_file):
     arguments = Seq2SeqTrainingArguments(
         output_dir=f"checkpoints/{description}",
         optim="adamw_torch",
+        lr_scheduler_type=args.lr_scheduler_type,
         learning_rate=args.learning_rate,
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
         num_train_epochs=args.epochs,
         max_steps=args.max_steps,
         predict_with_generate=True,
@@ -94,7 +105,7 @@ def train(args, model, train_file):
         save_strategy="steps",
         save_steps=2500,
         eval_steps=2500,
-        logging_steps=100,
+        logging_steps=25,
         save_total_limit=2,
         load_best_model_at_end=True,
         metric_for_best_model="rougeL",
