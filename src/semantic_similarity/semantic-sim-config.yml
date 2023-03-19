@@ -6,13 +6,13 @@ task_to_categories_path: '/Users/dustin/Documents/School/1_stanford/classes/cs22
 task_to_source_path: '/Users/dustin/Documents/School/1_stanford/classes/cs224n/project/cs224n-project/src/semantic_similarity/task_to_source.json'
 embed_type: "task"  # "category # 
 grouping_method: 'iterative' # 'clustering' # 
-min_or_max:   'min' # 'max' # 
+min_or_max:  'max' # 'min' # 
 clustering_method: 'kmeans'
 use_elbow_method: False
 num_clusters: 
   - 76
 distance_threshold: 
 filter_by_instance_count: True  # if True, only use a subset of the total embeddings
-group_size: 200 # the number of embeddings in the final group, around 10 for categories and 125 for tasks
+group_size: 300 # the number of embeddings in the final group, around 10 for categories and 125 for tasks
 instance_count_path: "/Users/dustin/Documents/School/1_stanford/classes/cs224n/project/cs224n-project/src/data_utils/split_instance_count_simple.json"
 instance_count_threshold: 3250

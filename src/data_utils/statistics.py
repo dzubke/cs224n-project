@@ -100,7 +100,7 @@ def sort_by_count(count: dict) -> dict:
 
 
 def plot_historgrams(split_name, count_name, bins=50, ticks=list(range(0, 500000, 20000))):
-    with open("split_instance_count.json", "r") as fid:
+    with open("split_instance_count_simple.json", "r") as fid:
         count = json.load(fid)
 
     df = pd.DataFrame(count[split_name][count_name].items(), columns=[count_name, "count"])
@@ -110,6 +110,42 @@ def plot_historgrams(split_name, count_name, bins=50, ticks=list(range(0, 500000
     plt.setp(labels, rotation=60)
     plt.xlabel("Task instance count")
     plt.ylabel(count_name)
+    plt.show()
+
+
+def plot_historgrams_report(split_name, count_name, bins=50, ticks=list(range(0, 100000, 10000))):
+    with open("split_instance_count_simple.json", "r") as fid:
+        count = json.load(fid)
+
+    plt.figure(figsize=(5, 3))
+    df = pd.DataFrame(count[split_name][count_name].items(), columns=[count_name, "count"])
+    df["count"].plot.hist(grid=True, bins=bins, rwidth=0.9, color="#607c8e")
+    plt.xticks(ticks=ticks)
+    locs, labels = plt.xticks()
+    plt.setp(labels, rotation=60)
+    plt.xlabel("Instance Count per Task")
+    plt.ylabel("Number of Tasks")
+    plt.title("Histogram of Tasks by Instance Count")
+    plt.tight_layout()
+    plt.savefig(f"task-train-histogram.png")
+    plt.show()
+
+
+def plot_historgrams_report(split_name, count_name, bins=50, ticks=list(range(0, 500000, 50000))):
+    with open("split_instance_count_simple.json", "r") as fid:
+        count = json.load(fid)
+
+    plt.figure(figsize=(5, 3))
+    df = pd.DataFrame(count[split_name][count_name].items(), columns=[count_name, "count"])
+    df["count"].plot.hist(grid=True, bins=bins, rwidth=0.9, color="#607c8e")
+    plt.xticks(ticks=ticks)
+    locs, labels = plt.xticks()
+    plt.setp(labels, rotation=60)
+    plt.xlabel("Instance Count per Task")
+    plt.ylabel("Number of Categories")
+    plt.title("Histogram of Categories by Instance Count")
+    plt.tight_layout()
+    plt.savefig(f"category-train-histogram.png")
     plt.show()
 
 
