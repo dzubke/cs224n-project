@@ -72,7 +72,7 @@ def model_init():
     model = AutoModelForSeq2SeqLM.from_pretrained("t5-small").to(device)
     return model
 
-def train(args, train_file):
+def train(args, model, train_file):
     name = train_file.split("/")[-1].split(".")[0]
     description = f"{name}-{args.learning_rate}"
     run = wandb.init(reinit=True, name=description)
@@ -83,6 +83,7 @@ def train(args, train_file):
 
     arguments = Seq2SeqTrainingArguments(
         output_dir=f"checkpoints/{description}",
+        optim="adamw_torch",
         learning_rate=args.learning_rate,
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
@@ -98,12 +99,11 @@ def train(args, train_file):
         load_best_model_at_end=True,
         metric_for_best_model="rougeL",
         report_to="wandb",
-        fp16=True,
+        fp16=False,
         seed=224
     )
     trainer = Seq2SeqTrainer(
-        model=None,
-        model_init=model_init,
+        model=model,
         args=arguments,
         train_dataset=train_dataset,
         eval_dataset=test_dataset,
@@ -114,10 +114,10 @@ def train(args, train_file):
 
 def main(args):
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    model = AutoModelForSeq2SeqLM.from_pretrained(args.model_name).to(device)
     print("Using device: ", device)
-    model = model_init()
     for train_file in args.train_file.split(","):
-        train(args, train_file)
+        train(args, model, train_file)
 
 if __name__=="__main__":
     main(parser.parse_args())
