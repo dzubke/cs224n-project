@@ -28,7 +28,8 @@ class TaskDataset:
         self.dataset_dir = dataset_dir
         self.train_file = train_file
         self.test_file = test_file
-        self.dataset = load_dataset("jayelm/natural-instructions")
+        if not self.test_file or not self.train_file:
+            self.dataset = load_dataset("jayelm/natural-instructions")
         self.metric = evaluate.load("rouge")
 
     def _tokenize_input_and_target(self, examples):
@@ -45,24 +46,28 @@ class TaskDataset:
         return inputs
     
     def get_test_dataset(self):
-        test_data = self.dataset['test'].filter(lambda e: e['eval'] == True)
-        test_data = test_data.remove_columns(['eval', 'pos_0_input', 'pos_0_output', 'pos_0_explanation', 'neg_0_input', 'neg_0_output', 'neg_0_explanation', 'pos_1_input', 'pos_1_output', 'pos_1_explanation', 'neg_1_input', 'neg_1_output', 'neg_1_explanation'])
-        tokenized = test_data.map(self._tokenize_input_and_target, batched=True, num_proc=4)
+        # Load custom training set.
+        test_dataset = load_dataset('json', data_files=self.test_file)['train']
+        tokenized = test_dataset.map(self._tokenize_input_and_target, batched=True, num_proc=4)
         return tokenized
 
     def get_dataset(self):
-        dataset = load_dataset("jayelm/natural-instructions")
         if not self.train_file:
-            dataset['train'] = dataset['train'].remove_columns(['eval', 'pos_0_input', 'pos_0_output', 'pos_0_explanation', 'neg_0_input', 'neg_0_output', 'neg_0_explanation', 'pos_1_input', 'pos_1_output', 'pos_1_explanation', 'neg_1_input', 'neg_1_output', 'neg_1_explanation'])            
-            train_dataset = dataset['train']
+            self.dataset['train'] = self.dataset['train'].remove_columns(['eval', 'pos_0_input', 'pos_0_output', 'pos_0_explanation', 'neg_0_input', 'neg_0_output', 'neg_0_explanation', 'pos_1_input', 'pos_1_output', 'pos_1_explanation', 'neg_1_input', 'neg_1_output', 'neg_1_explanation'])            
+            train_dataset = self.dataset['train']
         else:
             # Load custom training set.
             train_dataset = load_dataset('json', data_files=self.train_file)['train']
-        # First 100 instances in each task have eval=true.
-        test_data = dataset['test'].filter(lambda e: e['eval'] == True)
-        # Save space and remove these columns for now.
-        test_data = test_data.remove_columns(['eval', 'pos_0_input', 'pos_0_output', 'pos_0_explanation', 'neg_0_input', 'neg_0_output', 'neg_0_explanation', 'pos_1_input', 'pos_1_output', 'pos_1_explanation', 'neg_1_input', 'neg_1_output', 'neg_1_explanation'])
-        dataset_dict = DatasetDict(train=train_dataset, test=test_data)
+        if not self.test_file:
+            # First 100 instances in each task have eval=true.
+            test_dataset = self.dataset['test'].filter(lambda e: e['eval'] == True)
+            # Save space and remove these columns for now.
+            test_dataset = test_dataset.remove_columns(['eval', 'pos_0_input', 'pos_0_output', 'pos_0_explanation', 'neg_0_input', 'neg_0_output', 'neg_0_explanation', 'pos_1_input', 'pos_1_output', 'pos_1_explanation', 'neg_1_input', 'neg_1_output', 'neg_1_explanation'])
+        else:
+            # Load custom test set.
+            test_dataset = load_dataset('json', data_files=self.test_file)['train']
+
+        dataset_dict = DatasetDict(train=train_dataset, test=test_dataset)
         tokenized = dataset_dict.map(self._tokenize_input_and_target, batched=True, num_proc=6)
         return tokenized['train'], tokenized['test']
     
