@@ -138,4 +138,28 @@ def get_all_instances(dataset_path :str, tasks : List[str], sample_num):
         instances += samples
     return instances
 
+def get_first_instances(dataset_path :str, tasks : List[str], num_take=100):
+    """Given a list of tasks, return a list of task instance objects used for training."""
+    instances = []
+    for task in tasks:
+        try:
+            filepath = Path(dataset_path) / "tasks" / f"{task}.json"
+            ds = read_json_file(filepath)[task]
+        except:
+            print(f"ERROR. {filepath} does not exist.")
+            continue
+        temp_instances = []
+        for instance in ds['Instances'][:num_take]:
+            for output in instance['output']:
+                temp_instances.append({
+                    "task_name": task,
+                    "id": instance['id'],
+                    # Why is definition a list?
+                    "definition": ds['Definition'][0],
+                    "inputs": instance['input'],
+                    "targets": output
+                })
+        instances += temp_instances
+    return instances
+
     
