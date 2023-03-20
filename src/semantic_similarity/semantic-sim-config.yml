@@ -6,7 +6,7 @@ task_to_categories_path: '/Users/dustin/Documents/School/1_stanford/classes/cs22
 task_to_source_path: '/Users/dustin/Documents/School/1_stanford/classes/cs224n/project/cs224n-project/src/semantic_similarity/task_to_source.json'
 embed_type: "task"  # "category # 
 grouping_method: 'iterative' # 'clustering' # 
-min_or_max:  'max' # 'min' # 
+min_or_max:   'min' # 'max' # 
 clustering_method: 'kmeans'
 use_elbow_method: False
 num_clusters: 
