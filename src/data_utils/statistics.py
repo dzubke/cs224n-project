@@ -131,7 +131,7 @@ def plot_historgrams_report(split_name, count_name, bins=50, ticks=list(range(0,
     plt.show()
 
 
-def plot_historgrams_report(split_name, count_name, bins=50, ticks=list(range(0, 500000, 50000))):
+def plot_historgrams_report(split_name, count_name, bins=50, ticks=list(range(0, 500000, 40000))):
     with open("split_instance_count_simple.json", "r") as fid:
         count = json.load(fid)
 
@@ -141,7 +141,7 @@ def plot_historgrams_report(split_name, count_name, bins=50, ticks=list(range(0,
     plt.xticks(ticks=ticks)
     locs, labels = plt.xticks()
     plt.setp(labels, rotation=60)
-    plt.xlabel("Instance Count per Task")
+    plt.xlabel("Instance Count per Category")
     plt.ylabel("Number of Categories")
     plt.title("Histogram of Categories by Instance Count")
     plt.tight_layout()
